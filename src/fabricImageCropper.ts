@@ -1,5 +1,5 @@
+import { ControlsRenderer } from './controlsRenderer';
 import type { FabricImageCropperOptions } from './data.d';
-import { setCSSProperties } from './tools';
 
 export class FabricImageCropper {
   private workingState = false;
@@ -8,27 +8,12 @@ export class FabricImageCropper {
   private backupActive?: Required<fabric.Image>;
   private backupOrigin?: Required<fabric.Image>;
 
-  private container: HTMLDivElement;
-  private box: HTMLDivElement;
+  private active?: Required<fabric.Image>;
+
+  private controlsRenderer!: ControlsRenderer;
 
   constructor(private canvas: fabric.Canvas, options?: FabricImageCropperOptions) {
-    const canvasEl = canvas.getElement();
-    this.container = document.createElement('div');
-    this.box = document.createElement('div');
-
-    setCSSProperties(this.container, {
-      position: 'relative',
-      width: `${canvasEl.width}px`,
-      height: `${canvasEl.height}px`,
-      border: canvasEl.style.border,
-      'border-width': canvasEl.style.borderWidth,
-      'border-left-width': canvasEl.style.borderLeftWidth,
-      'border-top-width': canvasEl.style.borderTopWidth,
-      // overflow: 'hidden',
-    });
-
-    this.container.appendChild(this.box);
-    canvasEl.after(this.container);
+    this.controlsRenderer = new ControlsRenderer(canvas, {});
   }
 
   private getActiveImage() {
@@ -50,7 +35,7 @@ export class FabricImageCropper {
     this.stateChangeCallbacks.forEach((fn) => fn(state));
   }
 
-  public crop = () => {
+  public crop = async () => {
     if (this.workingState) return;
 
     const actice = this.getActiveImage();
@@ -58,34 +43,55 @@ export class FabricImageCropper {
       return;
     }
 
-    const { borderLeftWidth, borderTopWidth } = window.getComputedStyle(this.canvas.getElement());
+    const cropBox = {
+      left: actice.aCoords.tl.x,
+      top: actice.aCoords.tl.y,
+      width: actice.getScaledWidth(),
+      height: actice.getScaledHeight(),
+      src: actice.getSrc(),
+      cropX: actice.cropX,
+      cropY: actice.cropY,
+      angle: actice.angle,
+    };
 
-    const angle = actice.angle;
-    const left = actice.aCoords.tl.x + Number(borderLeftWidth.split('px')[0]);
-    const top = actice.aCoords.tl.y + Number(borderTopWidth.split('px')[0]);
-    const width = actice.getScaledWidth();
-    const height = actice.getScaledHeight();
+    const dragBox = {
+      left: actice.aCoords.tl.x,
+      top: actice.aCoords.tl.y,
+      width: actice.getScaledWidth(),
+      height: actice.getScaledHeight(),
+      src: actice.getSrc(),
+      cropX: actice.cropX,
+      cropY: actice.cropY,
+      angle: actice.angle,
+    };
 
-    setCSSProperties(this.box, {
-      position: 'absolute',
-      transform: `translate3d(${left}px, ${top}px, 0) rotate(${angle}deg)`,
-      width: `${width}px`,
-      height: `${height}px`,
-      'background-color': 'pink',
-      'transform-origin': 'left top',
-    });
+    this.controlsRenderer.render(actice, cropBox, dragBox);
+
+    this.active = actice;
+    this.canvas.discardActiveObject();
+    this.canvas.renderAll();
 
     this.fireStateChangeCallbacks(true);
   };
 
   public confirm = () => {
-    if (!this.workingState) return;
+    if (!this.workingState || !this.active) return;
+
+    this.canvas.setActiveObject(this.active);
+    this.canvas.renderAll();
+
+    this.controlsRenderer.clear();
 
     this.fireStateChangeCallbacks(false);
   };
 
   public cancel = () => {
-    if (!this.workingState) return;
+    if (!this.workingState || !this.active) return;
+
+    this.canvas.setActiveObject(this.active);
+    this.canvas.renderAll();
+
+    this.controlsRenderer.clear();
 
     this.fireStateChangeCallbacks(false);
   };

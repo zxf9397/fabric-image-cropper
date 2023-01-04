@@ -1,0 +1,106 @@
+.fb-cropper-container {
+  position: relative;
+  user-select: none;
+}
+
+.fb-cropper-container::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #dcdfe6;
+  opacity: 0.8;
+}
+
+.fb-cropper-lower {
+  position: relative;
+}
+
+.lower-drag {
+  position: absolute;
+  transform-origin: left top;
+  opacity: 0.5;
+}
+
+.lower-drag img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.lower-crop {
+  position: absolute;
+  transform-origin: left top;
+  overflow: hidden;
+}
+
+.lower-crop img {
+  position: absolute;
+}
+
+.fb-cropper-upper {
+  position: relative;
+}
+
+.upper-box {
+  position: absolute;
+}
+
+.upper-box-coords {
+  position: absolute;
+  transform-origin: left top;
+}
+
+.c-coord {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  color: #fff;
+  transform: translate3d(-50%, -50%, 0);
+}
+
+.c-coord.tr {
+  left: 100%;
+  transform: translate3d(-50%, -50%, 0) rotate(90deg);
+}
+
+.c-coord.br {
+  left: 100%;
+  top: 100%;
+  transform: translate3d(-50%, -50%, 0) rotate(180deg);
+}
+
+.c-coord.bl {
+  top: 100%;
+  transform: translate3d(-50%, -50%, 0) rotate(270deg);
+}
+
+.m-coord {
+  position: absolute;
+  width: 18px;
+  height: 6px;
+  border-radius: 18px;
+  background-color: #fff;
+  box-shadow: 0 0 2px 1px rgba(37, 43, 49, 0.15), 0 0 0 1px rgba(37, 43, 49, 0.2);
+  transform: translate3d(-50%, -50%, 0);
+}
+
+.m-coord.mt {
+  left: 50%;
+}
+
+.m-coord.mr {
+  left: 100%;
+  top: 50%;
+  transform: translate3d(-50%, -50%, 0) rotate(90deg);
+}
+
+.m-coord.mb {
+  left: 50%;
+  top: 100%;
+}
+
+.m-coord.ml {
+  top: 50%;
+  transform: translate3d(-50%, -50%, 0) rotate(90deg);
+}
