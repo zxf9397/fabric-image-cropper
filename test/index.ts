@@ -1,5 +1,6 @@
 import { fabric } from 'fabric';
 import { FabricImageCropper } from '../src';
+import { createLinearFunction, Point } from '../src/utils/tools';
 
 const cropButton = document.querySelector('#crop-btn') as HTMLButtonElement;
 const confirmButton = document.querySelector('#confirm-btn') as HTMLButtonElement;

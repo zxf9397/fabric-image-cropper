@@ -1,4 +1,5 @@
 import * as CSS from 'csstype';
+import { Point } from './utils/tools';
 
 export type CoordType = 'tl' | 'mt' | 'tr' | 'mr' | 'br' | 'mb' | 'bl' | 'ml';
 
@@ -19,11 +20,11 @@ export interface CropBoxData extends DragBoxData {
 export interface ControlsContainer {
   el: HTMLElement;
   dragBox: {
-    render(dragBox: DragBoxData, cropBox: CropBoxData): void;
+    render(dragBox: DragBoxData, cropBox: CropBoxData): Promise<void>;
     coords: Map<CoordType, HTMLDivElement>;
   };
   cropBox: {
-    render(dragBox: DragBoxData, cropBox: CropBoxData): void;
+    render(dragBox: DragBoxData, cropBox: CropBoxData): Promise<void>;
     coords: Map<CoordType, HTMLDivElement>;
   };
 }
@@ -33,6 +34,8 @@ export interface IElementParam<T extends keyof HTMLElementTagNameMap> {
   classList?: string[];
   style?: CSS.PropertiesHyphen;
 }
+
+export type EventCallback = (event: { e: MouseEvent; type: string; pointer: Point; coord?: CoordType }) => void;
 
 export interface ControlsRendererOptions {}
 
