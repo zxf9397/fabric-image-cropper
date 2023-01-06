@@ -17,6 +17,10 @@ export class FabricImageCropper {
   constructor(private canvas: fabric.Canvas, options?: FabricImageCropperOptions) {
     this.controlsRenderer = new ControlsRenderer(canvas, {});
 
+    canvas.on('mouse:move', (e) => {
+      e.target;
+    });
+
     this.controlsRenderer.on('object:down', (e) => (this.startPointer = e.pointer));
     this.controlsRenderer.on('object:moving', this.handleMove);
     this.controlsRenderer.on('object:up', this.handleMoveEnd);
@@ -52,6 +56,26 @@ export class FabricImageCropper {
             convertXYSystem(localPosition, active.angle, active.aCoords.tr),
             createLinearFunction(active.aCoords.tl, active.aCoords.tr)
           );
+          break;
+        case 'mt':
+          const linear = createLinearFunction(active.aCoords.tl, active.aCoords.bl);
+          position = pedalPoint(event.pointer, linear);
+          localPosition = active.toLocalPoint(position as fabric.Point, 'right', 'bottom');
+          break;
+        case 'mr':
+          const linear2 = createLinearFunction(active.aCoords.tl, active.aCoords.tr);
+          position = pedalPoint(convertXYSystem(event.pointer, active.angle), linear2);
+          localPosition = active.toLocalPoint(position as fabric.Point, 'right', 'bottom');
+          break;
+        case 'mb':
+          // const linear = createLinearFunction(active.aCoords.tl, active.aCoords.bl);
+          // position = pedalPoint(event.pointer, linear);
+          // localPosition = active.toLocalPoint(position, 'right', 'bottom');
+          break;
+        case 'ml':
+          // const linear = createLinearFunction(active.aCoords.tl, active.aCoords.bl);
+          // position = pedalPoint(event.pointer, linear);
+          // localPosition = active.toLocalPoint(position, 'right', 'bottom');
           break;
         default:
           return;

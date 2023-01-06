@@ -1,5 +1,6 @@
-import '../src/styles/cropper.css';
+// import '../src/styles/cropper.css';
+import '../src/styles/style.css';
 
-import { FabricImageCropper } from './fabricImageCropper';
+import { ImageCropper } from './cropper/cropper';
 
-export { FabricImageCropper };
+export { ImageCropper };

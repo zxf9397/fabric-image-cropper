@@ -1,7 +1,9 @@
 import * as CSS from 'csstype';
 import { Point } from './utils/tools';
 
-export type CoordType = 'tl' | 'mt' | 'tr' | 'mr' | 'br' | 'mb' | 'bl' | 'ml';
+export type RightAngleCornerType = 'tl' | 'tr' | 'br' | 'bl';
+export type MiddleCornerType = 'mt' | 'mr' | 'mb' | 'ml';
+export type CornerType = RightAngleCornerType | MiddleCornerType;
 
 export interface DragBoxData {
   left: number;
@@ -21,21 +23,20 @@ export interface ControlsContainer {
   el: HTMLElement;
   dragBox: {
     render(dragBox: DragBoxData, cropBox: CropBoxData): Promise<void>;
-    coords: Map<CoordType, HTMLDivElement>;
+    coords: Map<CornerType, HTMLDivElement>;
   };
   cropBox: {
     render(dragBox: DragBoxData, cropBox: CropBoxData): Promise<void>;
-    coords: Map<CoordType, HTMLDivElement>;
+    coords: Map<CornerType, HTMLDivElement>;
   };
 }
 
 export interface IElementParam<T extends keyof HTMLElementTagNameMap> {
-  tagName: T;
   classList?: string[];
   style?: CSS.PropertiesHyphen;
 }
 
-export type EventCallback = (event: { e: MouseEvent; type: string; pointer: Point; coord?: CoordType }) => void;
+export type EventCallback = (event: { e: MouseEvent; type: string; pointer: Point; coord?: CornerType }) => void;
 
 export interface ControlsRendererOptions {}
 

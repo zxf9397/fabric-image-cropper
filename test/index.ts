@@ -1,6 +1,5 @@
 import { fabric } from 'fabric';
-import { FabricImageCropper } from '../src';
-import { createLinearFunction, Point } from '../src/utils/tools';
+import { ImageCropper } from '../src';
 
 const cropButton = document.querySelector('#crop-btn') as HTMLButtonElement;
 const confirmButton = document.querySelector('#confirm-btn') as HTMLButtonElement;
@@ -35,23 +34,49 @@ function fabricImageFromURL(url: string, imgOptions?: fabric.IImageOptions) {
 
   fabricCanvas.add(image, image2).renderAll();
 
-  const fabricImageCropper = new FabricImageCropper(fabricCanvas, {});
+  const container = (fabricCanvas as any).wrapperEl as HTMLDivElement;
 
-  fabricImageCropper.onStateChange((state) => {
+  const imageCropper = new ImageCropper(container, { containerOffsetX: 2, containerOffsetY: 2 });
+
+  imageCropper.onCropChange((state) => {
     cropButton.disabled = state;
     confirmButton.disabled = !state;
     cancelButton.disabled = !state;
   });
 
   cropButton.addEventListener('click', function () {
-    fabricImageCropper.crop();
+    const active = fabricCanvas.getActiveObject();
+
+    if (active?.type === 'image') {
+      const image = active as Required<fabric.Image>;
+
+      imageCropper.crop(
+        image.getSrc(),
+        {
+          left: image.left,
+          top: image.top,
+          width: image.getScaledWidth(),
+          height: image.getScaledHeight(),
+          angle: image.angle,
+          cropX: image.cropX,
+          cropY: image.cropY,
+        },
+        {
+          left: image.left,
+          top: image.top,
+          width: image.getScaledWidth(),
+          height: image.getScaledHeight(),
+          angle: image.angle,
+        }
+      );
+    }
   });
 
   confirmButton.addEventListener('click', function () {
-    fabricImageCropper.confirm();
+    imageCropper.confirm();
   });
 
   cancelButton.addEventListener('click', function () {
-    fabricImageCropper.cancel();
+    imageCropper.cancel();
   });
 })();

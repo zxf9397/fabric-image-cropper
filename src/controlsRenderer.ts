@@ -1,9 +1,9 @@
 import { createCornerSVG, createElement, findCornerQuadrant, setCSSProperties } from './utils/tools';
-import { ControlsContainer, ControlsRendererOptions, CoordType, CropBoxData, EventCallback, DragBoxData } from './data.d';
+import { ControlsContainer, ControlsRendererOptions, CornerType, CropBoxData, EventCallback, DragBoxData } from './data.d';
 
 const scaleMap = ['e', 'se', 's', 'sw', 'w', 'nw', 'n', 'ne', 'e'];
 
-const cornerStyleMap: Record<CoordType, { classList: string[] }> = {
+const cornerStyleMap: Record<CornerType, { classList: string[] }> = {
   tl: { classList: ['c-coord', 'tl'] },
   mt: { classList: ['m-coord', 'mt'] },
   tr: { classList: ['c-coord', 'tr'] },
@@ -43,7 +43,7 @@ export class ControlsRenderer {
   };
 
   private currentEvent: ListenerEvent | null = null;
-  private actionCoord?: CoordType;
+  private actionCoord?: CornerType;
 
   private handleMouseMove = (e: MouseEvent) => {
     const type = this.currentEvent;
@@ -95,7 +95,7 @@ export class ControlsRenderer {
     const upperDragCoordsBox = createElement({ tagName: 'div', classList: ['upper-box-coords'] });
     upperDrag.appendChild(upperDragCoordsBox);
 
-    const upperDragCoords = new Map<CoordType, HTMLDivElement>();
+    const upperDragCoords = new Map<CornerType, HTMLDivElement>();
     for (const key in cornerStyleMap) {
       const coordKey = key as keyof typeof cornerStyleMap;
 
@@ -114,7 +114,7 @@ export class ControlsRenderer {
     const upperCropCoordsBox = createElement({ tagName: 'div', classList: ['upper-box-coords'] });
     upperCrop.appendChild(upperCropCoordsBox);
 
-    const upperCropCoords = new Map<CoordType, HTMLDivElement>();
+    const upperCropCoords = new Map<CornerType, HTMLDivElement>();
     for (const key in cornerStyleMap) {
       const coordKey = key as keyof typeof cornerStyleMap;
 
@@ -262,7 +262,7 @@ export class ControlsRenderer {
     }
   };
 
-  private fire(type: ListenerEvent, data: { e: MouseEvent; type: string; coord?: CoordType }) {
+  private fire(type: ListenerEvent, data: { e: MouseEvent; type: string; coord?: CornerType }) {
     const callbacks = this.listener.get(type);
 
     if (callbacks && this.container) {

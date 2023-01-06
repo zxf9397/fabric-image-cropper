@@ -36,11 +36,11 @@ export function createCornerSVG() {
   return svg;
 }
 
-export function createElement<T extends keyof HTMLElementTagNameMap>(param: IElementParam<T>) {
-  const element = document.createElement(param.tagName);
+export function createElement<T extends keyof HTMLElementTagNameMap>(tagName: T, param?: IElementParam<T>) {
+  const element = document.createElement(tagName);
 
-  param.classList?.length && element.classList.add(...param.classList);
-  param.style && setCSSProperties(element, param.style);
+  param?.classList?.length && element.classList.add(...param.classList);
+  param?.style && setCSSProperties(element, param.style);
 
   return element;
 }

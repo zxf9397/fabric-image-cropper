@@ -1,0 +1,81 @@
+.image-cropper-container {
+  user-select: none;
+}
+
+.image-cropper-container::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #dcdfe6;
+  opacity: 0.8;
+}
+
+.image-cropper-drag {
+  position: absolute;
+  transform-origin: left top;
+
+  /* TEST */
+  width: 400px;
+  height: 400px;
+  transform: translate(200px, 200px) rotate(0deg);
+}
+
+.fcd-lower-image {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0.5;
+  object-fit: contain;
+}
+
+.fcc-upper-box {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  /* border: 2px solid tomato; */
+  box-sizing: border-box;
+}
+
+.fcc-upper-box-border {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  border: 2px solid tomato;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+}
+
+.ra-corner {
+  position: absolute;
+}
+
+.md-corner {
+  position: absolute;
+  width: 18px;
+  height: 8px;
+
+  /* TEST */
+  background-color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(37, 43, 49, 0.25);
+  border-radius: 10px;
+  transform-origin: center center;
+}
+
+.image-cropper-crop {
+  position: absolute;
+  transform-origin: left top;
+}
+
+.fcc-lower-box {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.lower-crop-image {
+  position: absolute;
+}
