@@ -44,6 +44,8 @@ function fabricImageFromURL(url: string, imgOptions?: fabric.IImageOptions) {
     cancelButton.disabled = !state;
   });
 
+  (window as any).imageCropper = imageCropper;
+
   cropButton.addEventListener('click', function () {
     const active = fabricCanvas.getActiveObject();
 

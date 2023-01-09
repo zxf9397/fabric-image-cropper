@@ -1,7 +1,7 @@
 import { CornerType } from '../data';
-import { createElement, setCSSProperties } from '../utils/tools';
+import { createElement, findCornerQuadrant, setCSSProperties } from '../utils/tools';
 import { Control } from './controls';
-import { createCropCorner, createCropXoYCorner } from './crop';
+import { createCropCorner, createCropXoYCorner, scaleMap } from './element';
 import { BoxRenderFunction } from './cropBoxRenderer';
 
 export class DragBoxRenderer {
@@ -12,15 +12,15 @@ export class DragBoxRenderer {
   angle = 0;
   src?: string;
 
-  private controls = {
-    tl: new Control({ x: 0, y: 0, angle: 0, createElement: createCropCorner('tl'), actionName: 'crop' }),
-    mt: new Control({ x: 0.5, y: 0, angle: 0, createElement: createCropXoYCorner('mt'), actionName: 'cropY' }),
-    tr: new Control({ x: 1, y: 0, angle: 90, createElement: createCropCorner('tr'), actionName: 'crop' }),
-    mr: new Control({ x: 1, y: 0.5, angle: 90, createElement: createCropXoYCorner('mr'), actionName: 'cropX' }),
-    br: new Control({ x: 1, y: 1, angle: 180, createElement: createCropCorner('br'), actionName: 'crop' }),
-    mb: new Control({ x: 0.5, y: 1, angle: 0, createElement: createCropXoYCorner('mb'), actionName: 'cropY' }),
-    bl: new Control({ x: 0, y: 1, angle: 270, createElement: createCropCorner('bl'), actionName: 'crop' }),
-    ml: new Control({ x: 0, y: 0.5, angle: 90, createElement: createCropXoYCorner('ml'), actionName: 'cropX' }),
+  controls = {
+    tl: new Control({ x: -1, y: -1, angle: 0, createElement: createCropCorner('tl'), actionName: 'scale' }),
+    mt: new Control({ x: 0, y: -1, angle: 0, createElement: createCropXoYCorner('mt'), actionName: 'scaleY' }),
+    tr: new Control({ x: 1, y: -1, angle: 90, createElement: createCropCorner('tr'), actionName: 'scale' }),
+    mr: new Control({ x: 1, y: 0, angle: 90, createElement: createCropXoYCorner('mr'), actionName: 'scaleX' }),
+    br: new Control({ x: 1, y: 1, angle: 180, createElement: createCropCorner('br'), actionName: 'scale' }),
+    mb: new Control({ x: 0, y: 1, angle: 0, createElement: createCropXoYCorner('mb'), actionName: 'scaleY' }),
+    bl: new Control({ x: -1, y: 1, angle: 270, createElement: createCropCorner('bl'), actionName: 'scale' }),
+    ml: new Control({ x: -1, y: 0, angle: 90, createElement: createCropXoYCorner('ml'), actionName: 'scaleX' }),
   };
 
   private elements!: {
@@ -90,6 +90,11 @@ export class DragBoxRenderer {
       width: `${dragBox.width}px`,
       height: `${dragBox.height}px`,
       transform: `translate(${dragBox.left}px, ${dragBox.top}px) rotate(${dragBox.angle}deg)`,
+    });
+
+    Object.entries(this.controls).forEach(([corner, control]) => {
+      control.cursorStyle = scaleMap[findCornerQuadrant(dragBox?.angle || 0, control)] + '-resize';
+      control.render();
     });
   };
 }

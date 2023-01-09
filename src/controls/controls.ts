@@ -8,6 +8,10 @@ export interface ActionEvent {
   corner: string;
 }
 
+const CorsorMap = ['ns', 'nesw', 'ew', 'nwse', 'ns', 'nesw', 'ew', 'nwse'];
+
+function wrapEventHandler() {}
+
 export class Control {
   visible = true;
   actionName = '';
@@ -24,6 +28,7 @@ export class Control {
     Object.assign(this, options);
 
     this.element = this.createElement();
+
     this.render();
   }
 
@@ -32,6 +37,10 @@ export class Control {
   mouseDownHandler(e: ActionEvent) {}
 
   mouseUpHandler(e: ActionEvent) {}
+
+  cursorStyleHandler(e: ActionEvent, control: Control) {
+    return control.cursorStyle;
+  }
 
   createElement(): HTMLElement {
     this.element?.remove();
@@ -44,9 +53,10 @@ export class Control {
     }
 
     setCSSProperties(this.element, {
-      left: `${this.x * 100}%`,
-      top: `${this.y * 100}%`,
+      left: `${(this.x + 1) * 50}%`,
+      top: `${(this.y + 1) * 50}%`,
       transform: `translate(-50%, -50%) translate(${this.offsetX}px, ${this.offsetY}px) rotate(${this.angle}deg)`,
+      cursor: this.cursorStyle,
     });
   }
 }

@@ -1,6 +1,8 @@
 import { CornerType, MiddleCornerType, RightAngleCornerType } from '../data';
 import { createElement } from '../utils/tools';
 
+export const scaleMap = ['e', 'se', 's', 'sw', 'w', 'nw', 'n', 'ne', 'e'];
+
 function createRightAngleSVG() {
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(SVG_NS, 'svg');
@@ -44,8 +46,68 @@ export function createCropCorner(corner: RightAngleCornerType) {
   };
 }
 
+export function createDragCorner() {}
+
 export function createCropXoYCorner(corner: MiddleCornerType) {
   return () => {
     return createElement('div', { classList: cornerStyleMap[corner].classList });
   };
 }
+
+interface VElement {
+  tag?: keyof HTMLElementTagNameMap;
+  className?: string;
+  children?: VElement[];
+}
+
+const vTree: VElement = {
+  className: 'image-cropper-container',
+  children: [
+    {
+      className: 'image-cropper-drag',
+      children: [
+        {
+          className: 'fcd-lower-box',
+          children: [{ tag: 'img', className: 'fcd-lower-image' }],
+        },
+        {
+          className: 'fcc-upper-box',
+          children: [
+            { className: 'fcc-upper-box-border' },
+            { className: 'ra-corner' },
+            { className: 'ra-corner' },
+            { className: 'ra-corner' },
+            { className: 'ra-corner' },
+            { className: 'md-corner' },
+            { className: 'md-corner' },
+            { className: 'md-corner' },
+            { className: 'md-corner' },
+          ],
+        },
+      ],
+    },
+    {
+      className: 'image-cropper-crop',
+      children: [
+        {
+          className: 'fcd-lower-box',
+          children: [{ tag: 'img', className: 'lower-crop-image' }],
+        },
+        {
+          className: 'fcc-upper-box',
+          children: [
+            { className: 'fcc-upper-box-border' },
+            { className: 'ra-corner' },
+            { className: 'ra-corner' },
+            { className: 'ra-corner' },
+            { className: 'ra-corner' },
+            { className: 'md-corner' },
+            { className: 'md-corner' },
+            { className: 'md-corner' },
+            { className: 'md-corner' },
+          ],
+        },
+      ],
+    },
+  ],
+};

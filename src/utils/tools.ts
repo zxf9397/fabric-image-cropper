@@ -6,9 +6,7 @@ export function setCSSProperties(element: HTMLElement, styles: CSS.PropertiesHyp
   Object.entries(styles).forEach(([key, val]) => element.style.setProperty(key, val));
 }
 
-export function findCornerQuadrant(fabricObject: fabric.Object, control: fabric.Control) {
-  const angle = fabricObject.angle || 0;
-
+export function findCornerQuadrant(angle: number, control: Point) {
   const cornerAngle = angle + Math.atan2(control.y, control.x) / (Math.PI / 180) + 360;
   return Math.round((cornerAngle % 360) / 45);
 }
