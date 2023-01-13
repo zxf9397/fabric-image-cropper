@@ -112,5 +112,5 @@ export function convertXYSystem(point: Point, rotate: number, origin?: Point) {
 }
 
 export function degreesToRadians(degrees: number) {
-  return (degrees * Math.PI) / 180;
+  return degrees * (Math.PI / 180);
 }

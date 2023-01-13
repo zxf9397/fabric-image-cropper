@@ -14,11 +14,6 @@
 .image-cropper-drag {
   position: absolute;
   transform-origin: left top;
-
-  /* TEST */
-  width: 400px;
-  height: 400px;
-  transform: translate(200px, 200px) rotate(0deg);
 }
 
 .fcd-lower-image {
@@ -26,7 +21,7 @@
   width: 100%;
   height: 100%;
   opacity: 0.5;
-  object-fit: contain;
+  object-fit: fill;
 }
 
 .fcc-upper-box {
@@ -44,7 +39,7 @@
   width: calc(100% + 2px);
   height: calc(100% + 2px);
   border: 2px solid tomato;
-  transform: translate(-50%, -50%);
+  transform: translate3d(-50%, -50%, 0);
   box-sizing: border-box;
 }
 

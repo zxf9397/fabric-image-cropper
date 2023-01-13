@@ -12,15 +12,15 @@ export class DragBoxRenderer {
   angle = 0;
   src?: string;
 
-  controls = {
-    tl: new Control({ x: -1, y: -1, angle: 0, createElement: createCropCorner('tl'), actionName: 'scale' }),
-    mt: new Control({ x: 0, y: -1, angle: 0, createElement: createCropXoYCorner('mt'), actionName: 'scaleY' }),
-    tr: new Control({ x: 1, y: -1, angle: 90, createElement: createCropCorner('tr'), actionName: 'scale' }),
-    mr: new Control({ x: 1, y: 0, angle: 90, createElement: createCropXoYCorner('mr'), actionName: 'scaleX' }),
-    br: new Control({ x: 1, y: 1, angle: 180, createElement: createCropCorner('br'), actionName: 'scale' }),
-    mb: new Control({ x: 0, y: 1, angle: 0, createElement: createCropXoYCorner('mb'), actionName: 'scaleY' }),
-    bl: new Control({ x: -1, y: 1, angle: 270, createElement: createCropCorner('bl'), actionName: 'scale' }),
-    ml: new Control({ x: -1, y: 0, angle: 90, createElement: createCropXoYCorner('ml'), actionName: 'scaleX' }),
+  controls: Partial<Record<CornerType, Control>> = {
+    tl: new Control({ x: -1, y: -1, angle: 0, createElement: createCropCorner('tl'), actionName: 'crop' }),
+    tr: new Control({ x: 1, y: -1, angle: 90, createElement: createCropCorner('tr'), actionName: 'crop' }),
+    br: new Control({ x: 1, y: 1, angle: 180, createElement: createCropCorner('br'), actionName: 'crop' }),
+    bl: new Control({ x: -1, y: 1, angle: 270, createElement: createCropCorner('bl'), actionName: 'crop' }),
+    // mt: new Control({ x: 0, y: -1, angle: 0, createElement: createCropXoYCorner('mt'), actionName: 'cropY' }),
+    // mr: new Control({ x: 1, y: 0, angle: 90, createElement: createCropXoYCorner('mr'), actionName: 'cropX' }),
+    // mb: new Control({ x: 0, y: 1, angle: 0, createElement: createCropXoYCorner('mb'), actionName: 'cropY' }),
+    // ml: new Control({ x: -1, y: 0, angle: 90, createElement: createCropXoYCorner('ml'), actionName: 'cropX' }),
   };
 
   private elements!: {
@@ -44,13 +44,9 @@ export class DragBoxRenderer {
     this.element.addEventListener('mouseup', this.actionEnd);
   }
 
-  private actionStart = (e: MouseEvent) => {
-    console.log(e);
-  };
+  private actionStart = (e: MouseEvent) => {};
 
-  private actionEnd = (e: MouseEvent) => {
-    console.log(e);
-  };
+  private actionEnd = (e: MouseEvent) => {};
 
   actionHandler = () => {};
 
@@ -67,7 +63,7 @@ export class DragBoxRenderer {
     upper.appendChild(createElement('div', { classList: ['fcc-upper-box-border'] }));
 
     for (const key in this.controls) {
-      const corner = this.controls[key as CornerType].element;
+      const corner = this.controls[key as CornerType]?.element;
       corner && upper.appendChild(corner);
     }
 
@@ -89,7 +85,7 @@ export class DragBoxRenderer {
     setCSSProperties(this.elements.root, {
       width: `${dragBox.width}px`,
       height: `${dragBox.height}px`,
-      transform: `translate(${dragBox.left}px, ${dragBox.top}px) rotate(${dragBox.angle}deg)`,
+      transform: `translate3d(${dragBox.left}px, ${dragBox.top}px, 0) rotate(${dragBox.angle}deg)`,
     });
 
     Object.entries(this.controls).forEach(([corner, control]) => {

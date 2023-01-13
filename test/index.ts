@@ -24,15 +24,9 @@ function fabricImageFromURL(url: string, imgOptions?: fabric.IImageOptions) {
 }
 
 (async () => {
-  const image = await fabricImageFromURL('https://media-public.canva.cn/d8u_o/MAE2O2d8u_o/1/tl.jpg', {
-    left: 100,
-    top: 100,
-    scaleX: 0.5,
-    scaleY: 0.5,
-  });
-  const image2 = await fabricImageFromURL('/pic.png', { left: 200, top: 200, scaleX: 0.5, scaleY: 0.5 });
+  const image = await fabricImageFromURL('/pic.png', { left: 100, top: 100, scaleX: 0.5, scaleY: 0.3 });
 
-  fabricCanvas.add(image, image2).renderAll();
+  fabricCanvas.add(image).renderAll();
 
   const container = (fabricCanvas as any).wrapperEl as HTMLDivElement;
 

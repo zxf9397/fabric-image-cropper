@@ -16,15 +16,15 @@ export class CropBoxRenderer {
   angle = 0;
   src?: string;
 
-  controls = {
+  controls: Partial<Record<CornerType, Control>> = {
     tl: new Control({ x: -1, y: -1, angle: 0, createElement: createCropCorner('tl'), actionName: 'crop' }),
-    mt: new Control({ x: 0, y: -1, angle: 0, createElement: createCropXoYCorner('mt'), actionName: 'cropY' }),
     tr: new Control({ x: 1, y: -1, angle: 90, createElement: createCropCorner('tr'), actionName: 'crop' }),
-    mr: new Control({ x: 1, y: 0, angle: 90, createElement: createCropXoYCorner('mr'), actionName: 'cropX' }),
     br: new Control({ x: 1, y: 1, angle: 180, createElement: createCropCorner('br'), actionName: 'crop' }),
-    mb: new Control({ x: 0, y: 1, angle: 0, createElement: createCropXoYCorner('mb'), actionName: 'cropY' }),
     bl: new Control({ x: -1, y: 1, angle: 270, createElement: createCropCorner('bl'), actionName: 'crop' }),
-    ml: new Control({ x: -1, y: 0, angle: 90, createElement: createCropXoYCorner('ml'), actionName: 'cropX' }),
+    // mt: new Control({ x: 0, y: -1, angle: 0, createElement: createCropXoYCorner('mt'), actionName: 'cropY' }),
+    // mr: new Control({ x: 1, y: 0, angle: 90, createElement: createCropXoYCorner('mr'), actionName: 'cropX' }),
+    // mb: new Control({ x: 0, y: 1, angle: 0, createElement: createCropXoYCorner('mb'), actionName: 'cropY' }),
+    // ml: new Control({ x: -1, y: 0, angle: 90, createElement: createCropXoYCorner('ml'), actionName: 'cropX' }),
   };
 
   private elements!: {
@@ -58,7 +58,7 @@ export class CropBoxRenderer {
     upper.appendChild(createElement('div', { classList: ['fcc-upper-box-border'] }));
 
     for (const key in this.controls) {
-      const corner = this.controls[key as CornerType].element;
+      const corner = this.controls[key as CornerType]?.element;
       corner && upper.appendChild(corner);
     }
 
@@ -80,13 +80,13 @@ export class CropBoxRenderer {
     setCSSProperties(this.elements.root, {
       width: `${cropBox.width}px`,
       height: `${cropBox.height}px`,
-      transform: `translate(${cropBox.left}px, ${cropBox.top}px) rotate(${cropBox.angle}deg)`,
+      transform: `translate3d(${cropBox.left}px, ${cropBox.top}px, 0) rotate(${cropBox.angle}deg)`,
     });
 
     setCSSProperties(this.elements.image, {
       width: `${dragBox.width}px`,
       height: `${dragBox.height}px`,
-      transform: `translate(${-cropBox.cropX}px, ${-cropBox.cropY}px)`,
+      transform: `translate3d(${-cropBox.cropX}px, ${-cropBox.cropY}px, 0)`,
     });
 
     Object.entries(this.controls).forEach(([corner, control]) => {

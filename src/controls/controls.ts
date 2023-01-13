@@ -55,7 +55,7 @@ export class Control {
     setCSSProperties(this.element, {
       left: `${(this.x + 1) * 50}%`,
       top: `${(this.y + 1) * 50}%`,
-      transform: `translate(-50%, -50%) translate(${this.offsetX}px, ${this.offsetY}px) rotate(${this.angle}deg)`,
+      transform: `translate3d(-50%, -50%, 0) translate3d(${this.offsetX}px, ${this.offsetY}px, 0) rotate(${this.angle}deg)`,
       cursor: this.cursorStyle,
     });
   }

@@ -1,7 +1,8 @@
 import { CropBoxRenderer } from '../controls/cropBoxRenderer';
 import { DragBoxRenderer } from '../controls/dragBoxRenderer';
 import { CornerType } from '../data';
-import { convertXYSystem, createElement, findCornerQuadrant, Point, setCSSProperties } from '../utils/tools';
+import { IPoint, Point } from '../utils/point';
+import { convertXYSystem, createElement, setCSSProperties } from '../utils/tools';
 
 export interface Box {
   left: number;
@@ -70,12 +71,16 @@ export class ImageCropper {
       this.target = undefined;
       this.action = '';
 
+      this.newCropBox && (this.cropBox = this.newCropBox);
+      this.newDragBox && (this.dragBox = this.newDragBox);
+
       setCSSProperties(this.container, { cursor: 'default' });
     });
     Object.entries(this.dragBoxRenderer.controls).forEach(([corner, control]) => {
       control.element?.addEventListener('mousedown', () => {
         this.target = this.dragBoxRenderer;
         this.action = corner;
+        this.crop();
 
         setCSSProperties(this.container, { cursor: control.cursorStyle });
       });
@@ -84,93 +89,305 @@ export class ImageCropper {
       control.element?.addEventListener('mousedown', () => {
         this.target = this.cropBoxRenderer;
         this.action = corner;
+        this.crop();
+
         setCSSProperties(this.container, { cursor: control.cursorStyle });
       });
     });
   }
 
-  private cropCoords?: Record<CornerType, Point>;
-  private dragCoords?: Record<CornerType, Point>;
+  private cropCoords?: Record<CornerType, IPoint>;
+  private dragCoords?: Record<CornerType, IPoint>;
+  private newCropBox: CropBox | undefined;
+  private newDragBox: Box | undefined;
 
   private handleMouseMove = (e: MouseEvent) => {
-    if (!this.action || !this.src || !this.cropBox || !this.dragBox || !this.cropCoords || !this.dragCoords) {
+    if (!this.ok || !this.action || !this.src || !this.cropBox || !this.dragBox || !this.cropCoords || !this.dragCoords) {
       return;
     }
 
     const { left, top } = this.element.getBoundingClientRect();
 
-    const pointer = { x: e.clientX - left, y: e.clientY - top };
+    let pointer = new Point(e.clientX - left, e.clientY - top);
 
-    let cropBox: CropBox | undefined;
+    let newCropBox: CropBox = this.cropBox;
+    let newDragBox: Box = this.dragBox;
 
     if (this.target === this.cropBoxRenderer) {
       switch (this.action) {
         case 'tl': {
-          let p = pointer;
+          const br = this.cropCoords.br;
 
-          const dOffset = convertXYSystem({ x: p.x - this.dragCoords.tl.x, y: p.y - this.dragCoords.tl.y }, -this.cropBox.angle);
-          if (dOffset.x < 0 && dOffset.y < 0) {
-            p = convertXYSystem({ x: 0, y: 0 }, this.cropBox.angle, this.dragCoords.tl);
-          } else if (dOffset.x < 0) {
-            p = convertXYSystem({ x: 0, y: dOffset.y }, this.cropBox.angle, this.dragCoords.tl);
-          } else if (dOffset.y < 0) {
-            p = convertXYSystem({ x: dOffset.x, y: 0 }, this.cropBox.angle, this.dragCoords.tl);
+          const toRightBottom = pointer.subtract(br).rotate(-this.cropBox.angle).flipX().flipY();
+          const maxSize = new Point(this.dragCoords.tl).subtract(br).rotate(-this.cropBox.angle).flipX().flipY();
+
+          const leftSide = maxSize.x - toRightBottom.x < 0,
+            rightSide = toRightBottom.x < 0,
+            topSide = maxSize.y - toRightBottom.y < 0,
+            bottomSide = toRightBottom.y < 0;
+
+          let pos = pointer;
+          if (leftSide && topSide) {
+            pos = new Point(-maxSize.x, -maxSize.y).rotate(this.cropBox.angle).add(br);
+          } else if (topSide && rightSide) {
+            pos = new Point(0, -maxSize.y).rotate(this.cropBox.angle).add(br);
+          } else if (rightSide && bottomSide) {
+            pos = new Point(0, 0).rotate(this.cropBox.angle).add(br);
+          } else if (bottomSide && leftSide) {
+            pos = new Point(-maxSize.x, 0).rotate(this.cropBox.angle).add(br);
+          } else if (leftSide) {
+            pos = new Point(-maxSize.x, -toRightBottom.y).rotate(this.cropBox.angle).add(br);
+          } else if (topSide) {
+            pos = new Point(-toRightBottom.x, -maxSize.y).rotate(this.cropBox.angle).add(br);
+          } else if (rightSide) {
+            pos = new Point(0, -toRightBottom.y).rotate(this.cropBox.angle).add(br);
+          } else if (bottomSide) {
+            pos = new Point(-toRightBottom.x, 0).rotate(this.cropBox.angle).add(br);
           }
 
-          const o = convertXYSystem({ x: this.cropCoords.br.x - p.x, y: this.cropCoords.br.y - p.y }, 360 - this.cropBox.angle);
+          const crop = pos.subtract(this.dragCoords.tl).rotate(-this.dragBox.angle);
 
-          cropBox = {
-            left: p.x,
-            top: p.y,
-            width: o.x,
-            height: o.y,
-            cropX: Math.max(dOffset.x, 0),
-            cropY: Math.max(dOffset.y, 0),
-            angle: this.cropBox.angle,
+          newCropBox = {
+            ...this.cropBox,
+            left: pos.x,
+            top: pos.y,
+            width: Math.max(0, Math.min(toRightBottom.x, maxSize.x)),
+            height: Math.max(0, Math.min(toRightBottom.y, maxSize.y)),
+            cropX: crop.x,
+            cropY: crop.y,
           };
           break;
         }
         case 'tr': {
-          const local = convertXYSystem({ x: pointer.x - this.cropCoords.bl.x, y: pointer.y - this.cropCoords.bl.y }, this.cropBox.angle);
+          const bl = new Point(this.cropCoords.bl);
 
-          if (local.x < 0 && local.y < -this.cropBox.height) {
-            console.log(123);
-          } else if (local.x < 0) {
-            //
-          } else {
+          const leftBottom = pointer.subtract(bl).rotate(-this.dragBox.angle).flipY();
+          const maxSize = new Point(this.dragCoords.tr).subtract(bl).rotate(-this.cropBox.angle).flipY();
+
+          const topSide = maxSize.y - leftBottom.y < 0,
+            bottomSide = leftBottom.y < 0;
+
+          let pos = new Point(0, -leftBottom.y).rotate(this.cropBox.angle).add(bl);
+          if (topSide) {
+            pos = new Point(0, -maxSize.y).rotate(this.cropBox.angle).add(bl);
+          } else if (bottomSide) {
+            pos = new Point(0, 0).rotate(this.cropBox.angle).add(bl);
           }
 
-          const localPoint = convertXYSystem(pointer, -this.cropBox.angle);
+          const crop = pos.subtract(this.dragCoords.tl).rotate(-this.dragBox.angle);
+
+          newCropBox = {
+            ...this.cropBox,
+            left: pos.x,
+            top: pos.y,
+            width: Math.max(0, Math.min(leftBottom.x, maxSize.x)),
+            height: Math.max(0, Math.min(leftBottom.y, maxSize.y)),
+            cropX: crop.x,
+            cropY: crop.y,
+          };
+          break;
+        }
+        case 'br': {
+          const tl = this.cropCoords.tl;
+
+          const rightBottom = pointer.subtract(tl).rotate(-this.cropBox.angle);
+          const maxSize = new Point(this.dragCoords.br).subtract(tl).rotate(-this.cropBox.angle);
+
+          newCropBox = {
+            ...this.cropBox,
+            width: Math.max(0, Math.min(rightBottom.x, maxSize.x)),
+            height: Math.max(0, Math.min(rightBottom.y, maxSize.y)),
+          };
+          break;
+        }
+        case 'bl': {
+          const tr = this.cropCoords.tr;
+
+          const rightTop = pointer.subtract(tr).rotate(-this.cropBox.angle).flipX();
+          const maxSize = new Point(this.dragCoords.bl).subtract(tr).rotate(-this.cropBox.angle).flipX();
+
+          const leftSide = maxSize.x - rightTop.x < 0,
+            rightSide = rightTop.x < 0;
+
+          let pos = new Point(-rightTop.x, 0).rotate(this.cropBox.angle).add(tr);
+          if (leftSide) {
+            pos = new Point(-maxSize.x, 0).rotate(this.cropBox.angle).add(tr);
+          } else if (rightSide) {
+            pos = new Point(0, 0).rotate(this.cropBox.angle).add(tr);
+          }
+
+          const crop = pos.subtract(this.dragCoords.tl).rotate(-this.dragBox.angle);
+
+          newCropBox = {
+            ...this.cropBox,
+            left: pos.x,
+            top: pos.y,
+            width: Math.max(0, Math.min(rightTop.x, maxSize.x)),
+            height: Math.max(0, Math.min(rightTop.y, maxSize.y)),
+            cropX: crop.x,
+            cropY: crop.y,
+          };
+          break;
+        }
+        case 'ml':
+          break;
+        case 'mt':
+          break;
+        case 'mr':
+          break;
+        case 'mb':
+          break;
+      }
+    } else if (this.target === this.dragBoxRenderer) {
+      switch (this.action) {
+        case 'tl': {
+          const br = this.dragCoords.br;
+
+          const minSize = new Point(this.cropCoords.tl).subtract(br).rotate(-this.dragBox.angle).flipX().flipY();
+
+          const localBr = new Point(this.dragBox.width, this.dragBox.height);
+          const angle = Math.asin(this.dragBox.height / localBr.distanceFrom()) / (Math.PI / 180);
+
+          const m = new Point(this.dragBox.width, this.dragBox.height).rotate(-angle);
+
+          const p = pointer.subtract(br).rotate(-this.dragBox.angle - angle);
+          const n = new Point(p.x, p.x);
+
+          const ratio = -n.x / m.x;
+
+          const local = new Point(
+            -Math.max(this.dragBox.width * ratio, minSize.x, minSize.y),
+            -Math.max(this.dragBox.height * ratio, minSize.x, minSize.y)
+          );
+
+          const pos = local.rotate(this.dragBox.angle).add(br);
+
+          newDragBox = {
+            ...this.dragBox,
+            left: pos.x,
+            top: pos.y,
+            width: Math.abs(local.x),
+            height: Math.abs(local.y),
+          };
+
+          const crop = pos.subtract(this.cropCoords.tl).rotate(-this.cropBox.angle).flipX().flipY();
+
+          newCropBox = {
+            ...this.cropBox,
+            cropX: crop.x,
+            cropY: crop.y,
+          };
 
           break;
         }
-        case 'br':
-          const p2 = convertXYSystem(pointer, -this.cropBox.angle);
+        case 'tr': {
+          const bl = this.dragCoords.bl;
 
-          const np2 = convertXYSystem({ x: p2.x - this.cropBox.width, y: p2.y - this.cropBox.height }, this.cropBox.angle);
-          this.target.render(this.src, { ...this.cropBox, left: np2.x, top: np2.y }, this.dragBox);
+          const minSize = new Point(this.cropCoords.tr).subtract(bl).rotate(-this.dragBox.angle).flipY();
+
+          const localTr = new Point(this.dragBox.width, -this.dragBox.height);
+          const angle = Math.asin(this.dragBox.height / localTr.distanceFrom()) / (Math.PI / 180);
+
+          const m = new Point(this.dragBox.width, -this.dragBox.height).rotate(-angle);
+
+          const p = pointer.subtract(bl).rotate(-this.dragBox.angle - angle);
+
+          const ratio = p.y / m.y;
+
+          const local = new Point(
+            Math.max(this.dragBox.width * ratio, minSize.x, minSize.y),
+            -Math.max(this.dragBox.height * ratio, minSize.x, minSize.y)
+          );
+
+          const pos = new Point(0, local.y).rotate(this.dragBox.angle).add(bl);
+
+          newDragBox = {
+            ...this.dragBox,
+            left: pos.x,
+            top: pos.y,
+            width: Math.abs(local.x),
+            height: Math.abs(local.y),
+          };
+
+          const crop = pos.subtract(this.cropCoords.tl).rotate(-this.cropBox.angle).flipX().flipY();
+
+          newCropBox = {
+            ...this.cropBox,
+            cropX: crop.x,
+            cropY: crop.y,
+          };
+
           break;
-        case 'bl':
-          const p3 = convertXYSystem(pointer, -this.cropBox.angle);
+        }
+        case 'br': {
+          const tl = this.dragCoords.tl;
 
-          const np3 = convertXYSystem({ x: p3.x, y: p3.y - this.cropBox.height }, this.cropBox.angle);
-          this.target.render(this.src, { ...this.cropBox, left: np3.x, top: np3.y }, this.dragBox);
+          const minSize = new Point(this.cropCoords.br).subtract(tl).rotate(-this.dragBox.angle);
+
+          const localBr = new Point(this.dragBox.width, this.dragBox.height);
+          const angle = Math.asin(this.dragBox.height / localBr.distanceFrom()) / (Math.PI / 180);
+          const xAxis = new Point(this.dragBox.width, this.dragBox.height).rotate(-angle);
+          const xAxisPoint = pointer.subtract(tl).rotate(-this.dragBox.angle - angle);
+
+          const proportionalScaling = Math.max(xAxisPoint.x / xAxis.x, minSize.x / this.dragBox.width, minSize.y / this.dragBox.height);
+
+          const local = new Point(this.dragBox.width * proportionalScaling, this.dragBox.height * proportionalScaling);
+
+          newDragBox = {
+            ...this.dragBox,
+            width: local.x,
+            height: local.y,
+          };
+
           break;
-        case 'mt': {
-          const p = convertXYSystem(pointer, -this.cropBox.angle);
+        }
+        case 'bl': {
+          const tr = this.dragCoords.tr;
 
-          const np = convertXYSystem({ x: p.x - this.cropBox.width / 2, y: p.y }, this.cropBox.angle);
-          this.target.render(this.src, { ...this.cropBox, left: np.x, top: np.y }, this.dragBox);
+          const minSize = new Point(this.cropCoords.bl).subtract(tr).rotate(-this.dragBox.angle).flipX();
+
+          const localTr = new Point(this.dragBox.width, -this.dragBox.height);
+          const angle = Math.asin(this.dragBox.height / localTr.distanceFrom()) / (Math.PI / 180);
+
+          const m = new Point(this.dragBox.width, -this.dragBox.height).rotate(-angle);
+
+          const p = pointer.subtract(tr).rotate(-this.dragBox.angle - angle);
+
+          const ratio = -p.y / m.y;
+
+          const local = new Point(
+            -Math.max(this.dragBox.width * ratio, minSize.x, minSize.y),
+            Math.max(this.dragBox.height * ratio, minSize.x, minSize.y)
+          );
+
+          const pos = new Point(local.x, 0).rotate(this.dragBox.angle).add(tr);
+
+          newDragBox = {
+            ...this.dragBox,
+            left: pos.x,
+            top: pos.y,
+            width: Math.abs(local.x),
+            height: Math.abs(local.y),
+          };
+
+          const crop = pos.subtract(this.cropCoords.tl).rotate(-this.cropBox.angle).flipX().flipY();
+
+          newCropBox = {
+            ...this.cropBox,
+            cropX: crop.x,
+            cropY: crop.y,
+          };
           break;
         }
         default:
           break;
       }
-
-      if (cropBox) {
-        this.target.render(this.src, cropBox, this.dragBox);
-      }
     }
+
+    this.newCropBox = newCropBox;
+    this.newDragBox = newDragBox;
+    this.cropBoxRenderer.render(this.src, newCropBox || this.cropBox, newDragBox || this.dragBox);
+    this.dragBoxRenderer.render(this.src, newCropBox || this.cropBox, newDragBox || this.dragBox);
   };
 
   private createElement() {
@@ -212,11 +429,10 @@ export class ImageCropper {
 
   setCropper = (info: CropInfo) => {};
 
-  crop: CropFunction = async (src, cropBox, dragBox) => {
-    if (this.inCroppingState) {
-      return;
-    }
+  private ok = false;
 
+  crop: CropFunction = async (src, cropBox, dragBox) => {
+    this.ok = false;
     this.src ||= src;
     this.cropBox ||= cropBox;
     this.dragBox ||= dragBox;
@@ -253,6 +469,7 @@ export class ImageCropper {
     ]);
 
     this.show();
+    this.ok = true;
   };
 
   confirm = () => {
