@@ -5,7 +5,7 @@ import { Control } from './controls';
 import { createCropCorner, createCropXoYCorner, scaleMap } from './element';
 
 export interface BoxRenderFunction {
-  (src: string, cropBox: CropBox, dragBox: Box): Promise<void>;
+  (src: string, cropBox: CropBox, sourceBox: Box): Promise<void>;
 }
 
 export class CropBoxRenderer {
@@ -67,7 +67,7 @@ export class CropBoxRenderer {
     return { root, image };
   }
 
-  render: BoxRenderFunction = async (src, cropBox, dragBox) => {
+  render: BoxRenderFunction = async (src, cropBox, sourceBox) => {
     if (!src) {
       return;
     }
@@ -84,13 +84,13 @@ export class CropBoxRenderer {
     });
 
     setCSSProperties(this.elements.image, {
-      width: `${dragBox.width}px`,
-      height: `${dragBox.height}px`,
+      width: `${sourceBox.width}px`,
+      height: `${sourceBox.height}px`,
       transform: `translate3d(${-cropBox.cropX}px, ${-cropBox.cropY}px, 0)`,
     });
 
     Object.entries(this.controls).forEach(([corner, control]) => {
-      control.cursorStyle = scaleMap[findCornerQuadrant(dragBox?.angle || 0, control)] + '-resize';
+      control.cursorStyle = scaleMap[findCornerQuadrant(sourceBox?.angle || 0, control)] + '-resize';
       control.render();
     });
   };

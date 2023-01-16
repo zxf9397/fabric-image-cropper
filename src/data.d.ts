@@ -5,7 +5,7 @@ export type RightAngleCornerType = 'tl' | 'tr' | 'br' | 'bl';
 export type MiddleCornerType = 'mt' | 'mr' | 'mb' | 'ml';
 export type CornerType = RightAngleCornerType | MiddleCornerType;
 
-export interface DragBoxData {
+export interface SourceBoxData {
   left: number;
   top: number;
   width: number;
@@ -14,19 +14,19 @@ export interface DragBoxData {
   src: string;
 }
 
-export interface CropBoxData extends DragBoxData {
+export interface CropBoxData extends SourceBoxData {
   cropX: number;
   cropY: number;
 }
 
 export interface ControlsContainer {
   el: HTMLElement;
-  dragBox: {
-    render(dragBox: DragBoxData, cropBox: CropBoxData): Promise<void>;
+  sourceBox: {
+    render(sourceBox: SourceBoxData, cropBox: CropBoxData): Promise<void>;
     coords: Map<CornerType, HTMLDivElement>;
   };
   cropBox: {
-    render(dragBox: DragBoxData, cropBox: CropBoxData): Promise<void>;
+    render(sourceBox: SourceBoxData, cropBox: CropBoxData): Promise<void>;
     coords: Map<CornerType, HTMLDivElement>;
   };
 }

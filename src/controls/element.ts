@@ -46,7 +46,7 @@ export function createCropCorner(corner: RightAngleCornerType) {
   };
 }
 
-export function createDragCorner() {}
+export function createSourceCorner() {}
 
 export function createCropXoYCorner(corner: MiddleCornerType) {
   return () => {
@@ -64,7 +64,7 @@ const vTree: VElement = {
   className: 'image-cropper-container',
   children: [
     {
-      className: 'image-cropper-drag',
+      className: 'image-cropper-source',
       children: [
         {
           className: 'fcd-lower-box',

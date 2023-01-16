@@ -114,3 +114,7 @@ export function convertXYSystem(point: Point, rotate: number, origin?: Point) {
 export function degreesToRadians(degrees: number) {
   return degrees * (Math.PI / 180);
 }
+
+export function clamp(num: number, min: number, max: number) {
+  return Math.max(min, Math.min(num, max));
+}

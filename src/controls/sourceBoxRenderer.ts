@@ -4,7 +4,7 @@ import { Control } from './controls';
 import { createCropCorner, createCropXoYCorner, scaleMap } from './element';
 import { BoxRenderFunction } from './cropBoxRenderer';
 
-export class DragBoxRenderer {
+export class SourceBoxRenderer {
   left = 0;
   top = 0;
   width = 0;
@@ -51,7 +51,7 @@ export class DragBoxRenderer {
   actionHandler = () => {};
 
   createElement() {
-    const root = createElement('div', { classList: ['image-cropper-drag'] });
+    const root = createElement('div', { classList: ['image-cropper-source'] });
 
     const lower = createElement('div', { classList: ['fcd-lower-box'] });
     const image = createElement('img', { classList: ['fcd-lower-image'] });
@@ -72,7 +72,7 @@ export class DragBoxRenderer {
     return { root, image };
   }
 
-  render: BoxRenderFunction = async (src, cropBox, dragBox) => {
+  render: BoxRenderFunction = async (src, cropBox, sourceBox) => {
     if (!src) {
       return;
     }
@@ -83,13 +83,13 @@ export class DragBoxRenderer {
     });
 
     setCSSProperties(this.elements.root, {
-      width: `${dragBox.width}px`,
-      height: `${dragBox.height}px`,
-      transform: `translate3d(${dragBox.left}px, ${dragBox.top}px, 0) rotate(${dragBox.angle}deg)`,
+      width: `${sourceBox.width}px`,
+      height: `${sourceBox.height}px`,
+      transform: `translate3d(${sourceBox.left}px, ${sourceBox.top}px, 0) rotate(${sourceBox.angle}deg)`,
     });
 
     Object.entries(this.controls).forEach(([corner, control]) => {
-      control.cursorStyle = scaleMap[findCornerQuadrant(dragBox?.angle || 0, control)] + '-resize';
+      control.cursorStyle = scaleMap[findCornerQuadrant(sourceBox?.angle || 0, control)] + '-resize';
       control.render();
     });
   };

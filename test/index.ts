@@ -11,7 +11,7 @@ canvas.height = 600;
 canvas.style.setProperty('border', `${2}px solid`);
 const fabricCanvas = new fabric.Canvas(canvas);
 
-(window as any).canvas = fabricCanvas;
+window.canvas = fabricCanvas;
 
 function fabricImageFromURL(url: string, imgOptions?: fabric.IImageOptions) {
   return new Promise<fabric.Image>((resolve, reject) => {
@@ -24,13 +24,14 @@ function fabricImageFromURL(url: string, imgOptions?: fabric.IImageOptions) {
 }
 
 (async () => {
-  const image = await fabricImageFromURL('/pic.png', { left: 100, top: 100, scaleX: 0.5, scaleY: 0.3 });
+  const image = (await fabricImageFromURL('/pic.png', { left: 100, top: 100, scaleX: 0.5, scaleY: 0.3 })) as Required<fabric.Image>;
 
   fabricCanvas.add(image).renderAll();
 
-  const container = (fabricCanvas as any).wrapperEl as HTMLDivElement;
+  const container = fabricCanvas.wrapperEl;
 
   const imageCropper = new ImageCropper(container, { containerOffsetX: 2, containerOffsetY: 2 });
+  imageCropper.element.style.transform = 'translateX(100%)';
 
   imageCropper.onCropChange((state) => {
     cropButton.disabled = state;
@@ -38,7 +39,31 @@ function fabricImageFromURL(url: string, imgOptions?: fabric.IImageOptions) {
     cancelButton.disabled = !state;
   });
 
-  (window as any).imageCropper = imageCropper;
+  let cacheWidth = image.getScaledWidth();
+  let cacheHeight = image.getScaledHeight();
+  let cacheSourceBox: any;
+  let cacheScaleX = image.scaleX;
+  let cacheScaleY = image.scaleY;
+
+  imageCropper.onCrop(({ cropBox, sourceBox }) => {
+    const scaleX = (sourceBox.width / cacheWidth) * cacheScaleX;
+    const scaleY = (sourceBox.height / cacheHeight) * cacheScaleY;
+
+    image.set({
+      left: cropBox.left,
+      top: cropBox.top,
+      width: cropBox.width / scaleX,
+      height: cropBox.height / scaleY,
+      scaleX,
+      scaleY,
+      cropX: cropBox.cropX / scaleX,
+      cropY: cropBox.cropY / scaleY,
+    });
+
+    (image as any).sourceBox = sourceBox;
+
+    fabricCanvas.renderAll();
+  });
 
   cropButton.addEventListener('click', function () {
     const active = fabricCanvas.getActiveObject();
@@ -46,30 +71,47 @@ function fabricImageFromURL(url: string, imgOptions?: fabric.IImageOptions) {
     if (active?.type === 'image') {
       const image = active as Required<fabric.Image>;
 
-      imageCropper.crop(
-        image.getSrc(),
-        {
-          left: image.left,
-          top: image.top,
-          width: image.getScaledWidth(),
-          height: image.getScaledHeight(),
-          angle: image.angle,
-          cropX: image.cropX,
-          cropY: image.cropY,
-        },
-        {
-          left: image.left,
-          top: image.top,
-          width: image.getScaledWidth(),
-          height: image.getScaledHeight(),
-          angle: image.angle,
-        }
-      );
+      const cropBox = {
+        left: image.left,
+        top: image.top,
+        width: image.getScaledWidth(),
+        height: image.getScaledHeight(),
+        angle: image.angle,
+        cropX: image.cropX * image.scaleX,
+        cropY: image.cropY * image.scaleY,
+      };
+
+      const sourceBox = cacheSourceBox || {
+        left: image.left,
+        top: image.top,
+        width: image.getScaledWidth(),
+        height: image.getScaledHeight(),
+        angle: image.angle,
+      };
+
+      console.log('sourceBox', sourceBox);
+
+      imageCropper.crop(image.getSrc(), cropBox, sourceBox);
     }
   });
 
   confirmButton.addEventListener('click', function () {
-    imageCropper.confirm();
+    const { cropBox, sourceBox } = imageCropper.confirm();
+
+    const { width, height, scaleX, scaleY } = image as Required<fabric.Image>;
+
+    image.set({
+      left: cropBox.left,
+      top: cropBox.top,
+      width: cropBox.width / scaleX,
+      height: cropBox.height / scaleY,
+      cropX: cropBox.cropX / scaleX,
+      cropY: cropBox.cropY / scaleY,
+    });
+
+    cacheSourceBox = sourceBox;
+
+    fabricCanvas.renderAll();
   });
 
   cancelButton.addEventListener('click', function () {
