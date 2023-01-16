@@ -2,6 +2,7 @@ import { CropBoxRenderer } from '../controls/cropBoxRenderer';
 import { SourceBoxRenderer } from '../controls/sourceBoxRenderer';
 import { CornerType } from '../data';
 import { cropScalingHandlerMap } from '../handlers/cropScaling';
+import { sourceMovingHandler } from '../handlers/sourceMoving';
 import { sourceScalingHandlerMap } from '../handlers/sourceScaling';
 import { IPoint, Point } from '../utils/point';
 import { convertXYSystem, createElement, setCSSProperties } from '../utils/tools';
@@ -23,10 +24,6 @@ interface CropInfo {
   src: string;
   cropBox: Box;
   sourceBox: Box;
-}
-
-interface CropFunction {
-  (src?: string, cropBox?: CropBox, sourceBox?: Box): Promise<void>;
 }
 
 interface ImageCropperOptions extends CropInfo {
@@ -82,8 +79,21 @@ export class ImageCropper {
 
       setCSSProperties(this.container, { cursor: 'default' });
     });
+    [this.sourceBoxRenderer, this.cropBoxRenderer].forEach(({ element }) => {
+      element.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        const { left, top } = this.element.getBoundingClientRect();
+
+        this.startPoint = new Point(e.clientX - left, e.clientY - top);
+
+        this.action = 'moving';
+        this.crop();
+      });
+    });
     Object.entries(this.sourceBoxRenderer.controls).forEach(([corner, control]) => {
-      control.element?.addEventListener('mousedown', () => {
+      control.element?.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+
         this.target = this.sourceBoxRenderer;
         this.action = corner;
         this.crop();
@@ -92,7 +102,9 @@ export class ImageCropper {
       });
     });
     Object.entries(this.cropBoxRenderer.controls).forEach(([corner, control]) => {
-      control.element?.addEventListener('mousedown', () => {
+      control.element?.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+
         this.target = this.cropBoxRenderer;
         this.action = corner;
         this.crop();
@@ -107,6 +119,8 @@ export class ImageCropper {
   private newCropBox: CropBox | undefined;
   private newSourceBox: Box | undefined;
 
+  private startPoint?: Point;
+
   private handleMouseMove = (e: MouseEvent) => {
     if (!this.ok || !this.action || !this.src || !this.cropBox || !this.sourceBox || !this.cropCoords || !this.sourceCoords) {
       return;
@@ -114,7 +128,7 @@ export class ImageCropper {
 
     const { left, top } = this.element.getBoundingClientRect();
 
-    const action = this.action as CornerType;
+    const action = this.action as CornerType | 'moving';
     const pointer = new Point(e.clientX - left, e.clientY - top);
     const angle = this.cropBox.angle;
     const { cropCoords, sourceCoords, cropBox, sourceBox } = this;
@@ -122,11 +136,20 @@ export class ImageCropper {
     let newCropBox: CropBox = this.cropBox;
     let newSourceBox: Box = this.sourceBox;
 
-    if (this.target === this.cropBoxRenderer) {
-      const box = cropScalingHandlerMap[action]?.({ pointer, angle, cropCoords, sourceCoords: sourceCoords, cropBox });
+    if (action === 'moving') {
+      const point = new Point(
+        sourceBox.left + (pointer.x - (this.startPoint?.x || pointer.x)),
+        sourceBox.top + (pointer.y - (this.startPoint?.y || pointer.y))
+      );
+
+      const box = sourceMovingHandler({ pointer: point, angle, cropBox, cropCoords, sourceBox });
+      newCropBox = box.cropBox;
+      newSourceBox = box.sourceBox;
+    } else if (this.target === this.cropBoxRenderer) {
+      const box = cropScalingHandlerMap[action]?.({ pointer, angle, cropCoords, sourceCoords, cropBox });
       newCropBox = box.cropBox;
     } else if (this.target === this.sourceBoxRenderer) {
-      const box = sourceScalingHandlerMap[action]?.({ pointer, angle, cropCoords, sourceCoords: sourceCoords, cropBox, sourceBox: sourceBox });
+      const box = sourceScalingHandlerMap[action]?.({ pointer, angle, cropCoords, sourceCoords, cropBox, sourceBox });
       newCropBox = box.cropBox;
       newSourceBox = box.sourceBox;
     }
@@ -189,7 +212,7 @@ export class ImageCropper {
 
   private ok = false;
 
-  crop: CropFunction = async (src, cropBox, sourceBox) => {
+  crop = async (src?: string, cropBox?: CropBox, sourceBox?: Box) => {
     this.ok = false;
     this.src = src || this.src;
     this.cropBox = cropBox || this.cropBox;
@@ -238,12 +261,12 @@ export class ImageCropper {
     }
 
     if (!this.inCroppingState) {
-      return { cropBox, sourceBox: sourceBox };
+      return { cropBox, sourceBox };
     }
 
     this.hidden('confirm');
 
-    return { cropBox, sourceBox: sourceBox };
+    return { cropBox, sourceBox };
   };
 
   cancel = () => {
