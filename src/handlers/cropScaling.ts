@@ -1,30 +1,34 @@
-import { CropBox } from '../cropper/cropper';
-import { IPoint, Point } from '../utils/point';
-import { CornerType } from '../data.d';
+import { Point } from '../utils/point.class';
 import { clamp } from '../utils/tools';
 
-interface ScalingHandlerData {
+import type { ICropData } from '../cropper/data.d';
+import type { IControlCoords, IControlType } from '../controls/data.d';
+
+interface IScalingHandlerReturns {
+  cropData: ICropData;
+}
+
+interface IScalingHandlerParam extends IScalingHandlerReturns {
   pointer: Point;
-  angle: number;
-  cropBox: CropBox;
-  cropCoords: Record<CornerType, IPoint>;
-  sourceCoords: Record<CornerType, IPoint>;
+  cropCoords: IControlCoords;
+  sourceCoords: IControlCoords;
 }
 
-interface ScalingHandler {
-  (data: ScalingHandlerData): { cropBox: CropBox };
+interface IScalingHandler {
+  (param: IScalingHandlerParam): IScalingHandlerReturns;
 }
 
-export const cropScalingHandlerMap: Record<CornerType, ScalingHandler> = {
-  tl({ pointer, angle, cropCoords, sourceCoords, cropBox }) {
+export const cropScalingHandlerMap: Record<IControlType, IScalingHandler> = {
+  tl({ pointer, cropData, cropCoords, sourceCoords }) {
+    const angle = cropData.angle;
     const origin = cropCoords.br;
 
     const toRightBottom = pointer.subtract(origin).rotate(-angle).flipX().flipY();
     const maxSize = new Point(sourceCoords.tl).subtract(origin).rotate(-angle).flipX().flipY();
 
-    const leftSide = maxSize.x - toRightBottom.x < 0,
+    const leftSide = toRightBottom.x > maxSize.x,
       rightSide = toRightBottom.x < 0,
-      topSide = maxSize.y - toRightBottom.y < 0,
+      topSide = toRightBottom.y > maxSize.y,
       bottomSide = toRightBottom.y < 0;
 
     let pos = pointer;
@@ -49,38 +53,40 @@ export const cropScalingHandlerMap: Record<CornerType, ScalingHandler> = {
     const crop = pos.subtract(sourceCoords.tl).rotate(-angle);
 
     return {
-      cropBox: {
-        ...cropBox,
+      cropData: {
+        ...cropData,
         left: pos.x,
         top: pos.y,
-        width: clamp(toRightBottom.x, 0, maxSize.x),
-        height: clamp(toRightBottom.y, 0, maxSize.y),
+        width: clamp(toRightBottom.x, 0, maxSize.x) / cropData.scaleX,
+        height: clamp(toRightBottom.y, 0, maxSize.y) / cropData.scaleY,
         cropX: crop.x,
         cropY: crop.y,
       },
     };
   },
-  br({ pointer, angle, cropCoords, sourceCoords, cropBox }) {
+  br({ pointer, cropData, cropCoords, sourceCoords }) {
+    const angle = cropData.angle;
     const origin = cropCoords.tl;
 
     const rightBottom = pointer.subtract(origin).rotate(-angle);
     const maxSize = new Point(sourceCoords.br).subtract(origin).rotate(-angle);
 
     return {
-      cropBox: {
-        ...cropBox,
-        width: clamp(rightBottom.x, 0, maxSize.x),
-        height: clamp(rightBottom.y, 0, maxSize.y),
+      cropData: {
+        ...cropData,
+        width: clamp(rightBottom.x, 0, maxSize.x) / cropData.scaleX,
+        height: clamp(rightBottom.y, 0, maxSize.y) / cropData.scaleY,
       },
     };
   },
-  tr({ pointer, angle, cropCoords, sourceCoords, cropBox }) {
+  tr({ pointer, cropData, cropCoords, sourceCoords }) {
+    const angle = cropData.angle;
     const origin = cropCoords.bl;
 
     const leftBottom = pointer.subtract(origin).rotate(-angle).flipY();
     const maxSize = new Point(sourceCoords.tr).subtract(origin).rotate(-angle).flipY();
 
-    const topSide = maxSize.y - leftBottom.y < 0,
+    const topSide = leftBottom.y > maxSize.y,
       bottomSide = leftBottom.y < 0;
 
     let pos = new Point(0, -leftBottom.y).rotate(angle).add(origin);
@@ -93,18 +99,19 @@ export const cropScalingHandlerMap: Record<CornerType, ScalingHandler> = {
     const crop = pos.subtract(sourceCoords.tl).rotate(-angle);
 
     return {
-      cropBox: {
-        ...cropBox,
+      cropData: {
+        ...cropData,
         left: pos.x,
         top: pos.y,
-        width: clamp(leftBottom.x, 0, maxSize.x),
-        height: clamp(leftBottom.y, 0, maxSize.y),
+        width: clamp(leftBottom.x, 0, maxSize.x) / cropData.scaleX,
+        height: clamp(leftBottom.y, 0, maxSize.y) / cropData.scaleY,
         cropX: crop.x,
         cropY: crop.y,
       },
     };
   },
-  bl({ pointer, angle, cropCoords, sourceCoords, cropBox }) {
+  bl({ pointer, cropData, cropCoords, sourceCoords }) {
+    const angle = cropData.angle;
     const origin = cropCoords.tr;
 
     const rightTop = pointer.subtract(origin).rotate(-angle).flipX();
@@ -123,31 +130,31 @@ export const cropScalingHandlerMap: Record<CornerType, ScalingHandler> = {
     const crop = pos.subtract(sourceCoords.tl).rotate(-angle);
 
     return {
-      cropBox: {
-        ...cropBox,
+      cropData: {
+        ...cropData,
         left: pos.x,
         top: pos.y,
-        width: clamp(rightTop.x, 0, maxSize.x),
-        height: clamp(rightTop.y, 0, maxSize.y),
+        width: clamp(rightTop.x, 0, maxSize.x) / cropData.scaleX,
+        height: clamp(rightTop.y, 0, maxSize.y) / cropData.scaleY,
         cropX: crop.x,
         cropY: crop.y,
       },
     };
   },
-  mt({ pointer, angle, cropCoords, sourceCoords, cropBox }) {
+  mt({ pointer, cropData, cropCoords, sourceCoords }) {
     // TODO:
-    return { cropBox };
+    return { cropData };
   },
-  mb({ pointer, angle, cropCoords, sourceCoords, cropBox }) {
+  mb({ pointer, cropData, cropCoords, sourceCoords }) {
     // TODO:
-    return { cropBox };
+    return { cropData };
   },
-  ml({ pointer, angle, cropCoords, sourceCoords, cropBox }) {
+  ml({ pointer, cropData, cropCoords, sourceCoords }) {
     // TODO:
-    return { cropBox };
+    return { cropData };
   },
-  mr({ pointer, angle, cropCoords, sourceCoords, cropBox }) {
+  mr({ pointer, cropData, cropCoords, sourceCoords }) {
     // TODO:
-    return { cropBox };
+    return { cropData };
   },
 };

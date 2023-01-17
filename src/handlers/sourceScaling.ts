@@ -1,26 +1,31 @@
-import { Box, CropBox } from '../cropper/cropper';
-import { IPoint, Point } from '../utils/point';
-import { CornerType } from '../data';
+import { Point } from '../utils/point.class';
 
-interface ScalingHandlerData {
+import type { ICropData, ISourceData } from '../cropper/data.d';
+import type { IControlCoords, IControlType } from '../controls/data.d';
+
+interface IScalingHandlerReturns {
+  cropData: ICropData;
+  sourceData: ISourceData;
+}
+interface IScalingHandlerParam extends IScalingHandlerReturns {
   pointer: Point;
-  angle: number;
-  cropBox: CropBox;
-  cropCoords: Record<CornerType, IPoint>;
-  sourceBox: Box;
-  sourceCoords: Record<CornerType, IPoint>;
+  cropCoords: IControlCoords;
+  sourceCoords: IControlCoords;
 }
 
-interface ScalingHandler {
-  (data: ScalingHandlerData): { cropBox: CropBox; sourceBox: Box };
+interface IScalingHandler {
+  (param: IScalingHandlerParam): IScalingHandlerReturns;
 }
 
-export const sourceScalingHandlerMap: Record<CornerType, ScalingHandler> = {
-  tl({ pointer, angle, cropBox, cropCoords, sourceCoords, sourceBox }) {
+export const sourceScalingHandlerMap: Record<IControlType, IScalingHandler> = {
+  tl({ pointer, sourceCoords, cropData, sourceData, cropCoords }) {
+    const angle = cropData.angle;
     const origin = sourceCoords.br;
+    const scaledWidth = sourceData.width * cropData.scaleX;
+    const scaledHeight = sourceData.height * cropData.scaleY;
 
-    const diagonal = new Point(sourceBox.width, sourceBox.height);
-    const angleToX = Math.asin(sourceBox.height / diagonal.distanceFrom()) / (Math.PI / 180);
+    const diagonal = new Point(scaledWidth, scaledHeight);
+    const angleToX = Math.asin(scaledHeight / diagonal.distanceFrom()) / (Math.PI / 180);
 
     const xAxisMin = diagonal.rotate(-angleToX);
     const xAxisPoint = pointer
@@ -29,94 +34,145 @@ export const sourceScalingHandlerMap: Record<CornerType, ScalingHandler> = {
       .flipX();
 
     const minSize = new Point(cropCoords.tl).subtract(origin).rotate(-angle).flipX().flipY();
-    const proportionalScaling = Math.max(xAxisPoint.x / xAxisMin.x, minSize.x / sourceBox.width, minSize.y / sourceBox.height);
+    const proportionalScaling = Math.max(xAxisPoint.x / xAxisMin.x, minSize.x / scaledWidth, minSize.y / scaledHeight);
 
-    const localPoint = new Point(-sourceBox.width * proportionalScaling, -sourceBox.height * proportionalScaling);
+    const localPoint = new Point(-scaledWidth * proportionalScaling, -scaledHeight * proportionalScaling);
 
     const tl = localPoint.rotate(angle).add(origin);
     const crop = tl.subtract(cropCoords.tl).rotate(-angle).flipX().flipY();
 
+    const scaleX = -localPoint.x / scaledWidth;
+    const scaleY = -localPoint.y / scaledHeight;
+
     return {
-      cropBox: { ...cropBox, cropX: crop.x, cropY: crop.y },
-      sourceBox: { ...sourceBox, left: tl.x, top: tl.y, width: -localPoint.x, height: -localPoint.y },
+      cropData: {
+        ...cropData,
+        cropX: crop.x,
+        cropY: crop.y,
+        scaleX: cropData.scaleX * scaleX,
+        scaleY: cropData.scaleY * scaleY,
+        width: cropData.width / scaleX,
+        height: cropData.height / scaleY,
+      },
+      sourceData: { ...sourceData, left: tl.x, top: tl.y },
     };
   },
-  br({ pointer, angle, cropCoords, sourceCoords, cropBox, sourceBox }) {
+  br({ pointer, cropData, cropCoords, sourceData, sourceCoords }) {
+    const angle = cropData.angle;
     const origin = sourceCoords.tl;
+    const scaledWidth = sourceData.width * cropData.scaleX;
+    const scaledHeight = sourceData.height * cropData.scaleY;
 
-    const localBr = new Point(sourceBox.width, sourceBox.height);
-    const angleToX = Math.asin(sourceBox.height / localBr.distanceFrom()) / (Math.PI / 180);
-    const xAxis = new Point(sourceBox.width, sourceBox.height).rotate(-angleToX);
+    const localBr = new Point(scaledWidth, scaledHeight);
+    const angleToX = Math.asin(scaledHeight / localBr.distanceFrom()) / (Math.PI / 180);
+    const xAxis = new Point(scaledWidth, scaledHeight).rotate(-angleToX);
     const xAxisPoint = pointer.subtract(origin).rotate(-angle - angleToX);
 
     const minSize = new Point(cropCoords.br).subtract(origin).rotate(-angle);
-    const proportionalScaling = Math.max(xAxisPoint.x / xAxis.x, minSize.x / sourceBox.width, minSize.y / sourceBox.height);
+    const proportionalScaling = Math.max(xAxisPoint.x / xAxis.x, minSize.x / scaledWidth, minSize.y / scaledHeight);
 
-    const localPoint = new Point(sourceBox.width * proportionalScaling, sourceBox.height * proportionalScaling);
+    const localPoint = new Point(scaledWidth * proportionalScaling, scaledHeight * proportionalScaling);
+
+    const scaleX = localPoint.x / scaledWidth;
+    const scaleY = localPoint.y / scaledHeight;
 
     return {
-      cropBox,
-      sourceBox: { ...sourceBox, width: localPoint.x, height: localPoint.y },
+      cropData: {
+        ...cropData,
+        scaleX: cropData.scaleX * scaleX,
+        scaleY: cropData.scaleY * scaleY,
+        width: cropData.width / scaleX,
+        height: cropData.height / scaleY,
+      },
+      sourceData,
     };
   },
-  tr({ pointer, angle, cropCoords, sourceCoords, cropBox, sourceBox }) {
+  tr({ pointer, cropData, cropCoords, sourceData, sourceCoords }) {
+    const angle = cropData.angle;
     const origin = sourceCoords.bl;
+    const scaledWidth = sourceData.width * cropData.scaleX;
+    const scaledHeight = sourceData.height * cropData.scaleY;
 
-    const diagonal = new Point(sourceBox.width, -sourceBox.height);
-    const angleToX = Math.asin(sourceBox.width / diagonal.distanceFrom()) / (Math.PI / 180);
+    const diagonal = new Point(scaledWidth, -scaledHeight);
+    const angleToX = Math.asin(scaledWidth / diagonal.distanceFrom()) / (Math.PI / 180);
 
     const yAxisMin = diagonal.rotate(-angleToX);
     const yAxisPoint = pointer.subtract(origin).rotate(-angle - angleToX);
 
     const minSize = new Point(cropCoords.tr).subtract(origin).rotate(-angle).flipY();
-    const proportionalScaling = Math.max(yAxisPoint.y / yAxisMin.y, minSize.x / sourceBox.width, minSize.y / sourceBox.height);
+    const proportionalScaling = Math.max(yAxisPoint.y / yAxisMin.y, minSize.x / scaledWidth, minSize.y / scaledHeight);
 
-    const localPoint = new Point(sourceBox.width * proportionalScaling, -sourceBox.height * proportionalScaling);
+    const localPoint = new Point(scaledWidth * proportionalScaling, -scaledHeight * proportionalScaling);
 
     const tl = new Point(0, localPoint.y).rotate(angle).add(origin);
     const crop = tl.subtract(cropCoords.tl).rotate(-angle).flipX().flipY();
 
+    const scaleX = localPoint.x / scaledWidth;
+    const scaleY = -localPoint.y / scaledHeight;
+
     return {
-      cropBox: { ...cropBox, cropX: crop.x, cropY: crop.y },
-      sourceBox: { ...sourceBox, left: tl.x, top: tl.y, width: localPoint.x, height: -localPoint.y },
+      cropData: {
+        ...cropData,
+        cropX: crop.x,
+        cropY: crop.y,
+        scaleX: cropData.scaleX * scaleX,
+        scaleY: cropData.scaleY * scaleY,
+        width: cropData.width / scaleX,
+        height: cropData.height / scaleY,
+      },
+      sourceData: { ...sourceData, left: tl.x, top: tl.y },
     };
   },
-  bl({ pointer, angle, cropCoords, sourceCoords, cropBox, sourceBox }) {
+  bl({ pointer, cropData, cropCoords, sourceData, sourceCoords }) {
+    const angle = cropData.angle;
     const origin = sourceCoords.tr;
+    const scaledWidth = sourceData.width * cropData.scaleX;
+    const scaledHeight = sourceData.height * cropData.scaleY;
 
-    const diagonal = new Point(sourceBox.width, -sourceBox.height);
-    const angleToX = Math.asin(sourceBox.width / diagonal.distanceFrom()) / (Math.PI / 180);
+    const diagonal = new Point(scaledWidth, -scaledHeight);
+    const angleToX = Math.asin(scaledWidth / diagonal.distanceFrom()) / (Math.PI / 180);
 
     const yAxisMin = diagonal.rotate(-angleToX).flipY();
     const yAxisPoint = pointer.subtract(origin).rotate(-angle - angleToX);
 
     const minSize = new Point(cropCoords.bl).subtract(origin).rotate(-angle).flipX();
-    const proportionalScaling = Math.max(yAxisPoint.y / yAxisMin.y, minSize.x / sourceBox.width, minSize.y / sourceBox.height);
+    const proportionalScaling = Math.max(yAxisPoint.y / yAxisMin.y, minSize.x / scaledWidth, minSize.y / scaledHeight);
 
-    const localPoint = new Point(-sourceBox.width * proportionalScaling, sourceBox.height * proportionalScaling);
+    const localPoint = new Point(-scaledWidth * proportionalScaling, scaledHeight * proportionalScaling);
 
     const tl = new Point(localPoint.x, 0).rotate(angle).add(origin);
     const crop = tl.subtract(cropCoords.tl).rotate(-angle).flipX().flipY();
 
+    const scaleX = -localPoint.x / scaledWidth;
+    const scaleY = localPoint.y / scaledHeight;
+
     return {
-      cropBox: { ...cropBox, cropX: crop.x, cropY: crop.y },
-      sourceBox: { ...sourceBox, left: tl.x, top: tl.y, width: -localPoint.x, height: localPoint.y },
+      cropData: {
+        ...cropData,
+        cropX: crop.x,
+        cropY: crop.y,
+        scaleX: cropData.scaleX * scaleX,
+        scaleY: cropData.scaleY * scaleY,
+        width: cropData.width / scaleX,
+        height: cropData.height / scaleY,
+      },
+      sourceData: { ...sourceData, left: tl.x, top: tl.y },
     };
   },
-  mt({ pointer, angle, cropCoords, sourceCoords, cropBox, sourceBox }) {
+  mt({ pointer, cropData, cropCoords, sourceData, sourceCoords }) {
     // TODO:
-    return { cropBox, sourceBox };
+    return { cropData, sourceData };
   },
-  mb({ pointer, angle, cropCoords, sourceCoords, cropBox, sourceBox }) {
+  mb({ pointer, cropData, cropCoords, sourceData, sourceCoords }) {
     // TODO:
-    return { cropBox, sourceBox };
+    return { cropData, sourceData };
   },
-  ml({ pointer, angle, cropCoords, sourceCoords, cropBox, sourceBox }) {
+  ml({ pointer, cropData, cropCoords, sourceData, sourceCoords }) {
     // TODO:
-    return { cropBox, sourceBox };
+    return { cropData, sourceData };
   },
-  mr({ pointer, angle, cropCoords, sourceCoords, cropBox, sourceBox }) {
+  mr({ pointer, cropData, cropCoords, sourceData, sourceCoords }) {
     // TODO:
-    return { cropBox, sourceBox };
+    return { cropData, sourceData };
   },
 };

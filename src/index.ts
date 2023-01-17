@@ -1,5 +1,5 @@
 import '../src/styles/style.css';
 
-import { ImageCropper } from './cropper/cropper';
+import { ImageCropper } from './cropper/cropper.class';
 
 export { ImageCropper };

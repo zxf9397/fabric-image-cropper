@@ -1,5 +1,6 @@
 import { fabric } from 'fabric';
 import { ImageCropper } from '../src';
+import { FabricCropListener } from '../src/fabric/fabricCropListener.class';
 
 const cropButton = document.querySelector('#crop-btn') as HTMLButtonElement;
 const confirmButton = document.querySelector('#confirm-btn') as HTMLButtonElement;
@@ -28,9 +29,11 @@ function fabricImageFromURL(url: string, imgOptions?: fabric.IImageOptions) {
 
   fabricCanvas.add(image).renderAll();
 
+  const fabricCropListener = new FabricCropListener(fabricCanvas);
+
   const container = fabricCanvas.wrapperEl;
 
-  const imageCropper = new ImageCropper(container, { containerOffsetX: 2, containerOffsetY: 2 });
+  /* const imageCropper = new ImageCropper(container, { containerOffsetX: 2, containerOffsetY: 2 });
   imageCropper.element.style.transform = 'translateX(100%)';
 
   imageCropper.onCropChange((state) => {
@@ -91,7 +94,7 @@ function fabricImageFromURL(url: string, imgOptions?: fabric.IImageOptions) {
 
       console.log('sourceBox', sourceBox);
 
-      imageCropper.crop(image.getSrc(), cropBox, sourceBox);
+      imageCropper.cropV1(image.getSrc(), cropBox, sourceBox);
     }
   });
 
@@ -115,6 +118,21 @@ function fabricImageFromURL(url: string, imgOptions?: fabric.IImageOptions) {
   });
 
   cancelButton.addEventListener('click', function () {
-    imageCropper.cancel();
-  });
+    const { cropBox, sourceBox } = imageCropper.cancel();
+
+    const { width, height, scaleX, scaleY } = image as Required<fabric.Image>;
+
+    image.set({
+      left: cropBox.left,
+      top: cropBox.top,
+      width: cropBox.width / scaleX,
+      height: cropBox.height / scaleY,
+      cropX: cropBox.cropX / scaleX,
+      cropY: cropBox.cropY / scaleY,
+    });
+
+    cacheSourceBox = sourceBox;
+
+    fabricCanvas.renderAll();
+  }); */
 })();

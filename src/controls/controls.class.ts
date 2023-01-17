@@ -1,9 +1,10 @@
-import { CornerType } from '../data.d';
-import { createElement, Point, setCSSProperties } from '../utils/tools';
+import { createElement, setCSSProperties } from '../utils/tools';
+
+import type { IPoint } from '../utils/point.class';
 
 export interface ActionEvent {
   e: MouseEvent;
-  pointer: Point;
+  pointer: IPoint;
   target: Required<fabric.Image>;
   corner: string;
 }
