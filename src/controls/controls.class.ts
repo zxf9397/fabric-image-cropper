@@ -49,7 +49,7 @@ export class Control {
   }
 
   render() {
-    if (!this.element) {
+    if (!this.element || !this.visible) {
       return;
     }
 

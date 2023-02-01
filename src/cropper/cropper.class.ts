@@ -1,31 +1,17 @@
 import { CropRenderer } from '../controls/cropRenderer.class';
-import { IControlCoords, IControlType } from '../controls/data';
-import { SourceRenderer } from '../controls/sourceRenderer';
-import { CornerType } from '../data';
-import { cropScalingHandlerMap } from '../handlers/cropScaling';
+import { SourceRenderer } from '../controls/sourceRenderer.class';
+import { cropScalingHandler } from '../handlers/cropScaling';
 import { sourceMovingHandler } from '../handlers/sourceMoving';
-import { sourceScalingHandlerMap } from '../handlers/sourceScaling';
-import { IPoint, Point } from '../utils/point.class';
-import { convertXYSystem, createElement, getCoords, getZeroCoords, setCSSProperties } from '../utils/tools';
-import { ICropData, ISourceData } from './data';
+import { sourceScalingHandler } from '../handlers/sourceScaling';
+import { Point } from '../utils/point.class';
+import { createElement, getCoords, setCSSProperties } from '../utils/tools';
 
-export interface Box {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-  angle: number;
-}
-
-export interface CropBox extends Box {
-  cropX: number;
-  cropY: number;
-}
+import type { CornerType } from '../data.d';
+import type { ICropData, ISourceData } from './data.d';
+import type { IControlCoords, IControlType } from '../controls/data.d';
 
 interface CropInfo {
   src: string;
-  cropBox: Box;
-  sourceBox: Box;
 }
 
 interface ImageCropperOptions extends CropInfo {
@@ -41,24 +27,16 @@ interface CropChangeCallback {
   (state: boolean, type: CropStart | CropEnd): void;
 }
 
-interface CroppingCallbacks {
-  (box: { cropBox: CropBox; sourceBox: Box }): void;
-}
-
 export class ImageCropper {
   private inCroppingState = false;
   private action = '';
   private cropChangeCallbacks = new Set<CropChangeCallback>();
-  element: HTMLDivElement;
   private sourceRenderer: SourceRenderer;
   private cropRenderer: CropRenderer;
   private target?: SourceRenderer | CropRenderer;
 
+  element: HTMLDivElement;
   src?: string;
-  cropBox?: CropBox;
-  sourceBox?: Box;
-  cropBoxBackup?: CropBox;
-  sourceBoxBackup?: Box;
   visible = false;
   containerOffsetX = 0;
   containerOffsetY = 0;
@@ -73,13 +51,10 @@ export class ImageCropper {
 
     container.appendChild(this.element);
 
-    document.addEventListener('mousemove', this.handleMouseMove);
+    document.addEventListener('mousemove', this.actionHandler);
     document.addEventListener('mouseup', () => {
       this.target = undefined;
       this.action = '';
-
-      this.newCropBox && (this.cropBox = this.newCropBox);
-      this.newSourceBox && (this.sourceBox = this.newSourceBox);
 
       this.actionCropData && (this.cropData = this.actionCropData);
       this.actionSourceData && (this.sourceData = this.actionSourceData);
@@ -98,6 +73,12 @@ export class ImageCropper {
       });
     });
     Object.entries(this.sourceRenderer.controls).forEach(([corner, control]) => {
+      control.element?.addEventListener('mouseover', () => {
+        setCSSProperties(this.container, { cursor: control.cursorStyle });
+      });
+      control.element?.addEventListener('mouseleave', () => {
+        setCSSProperties(this.container, { cursor: 'default' });
+      });
       control.element?.addEventListener('mousedown', (e) => {
         e.stopPropagation();
 
@@ -109,6 +90,12 @@ export class ImageCropper {
       });
     });
     Object.entries(this.cropRenderer.controls).forEach(([corner, control]) => {
+      control.element?.addEventListener('mouseover', () => {
+        setCSSProperties(this.container, { cursor: control.cursorStyle });
+      });
+      control.element?.addEventListener('mouseleave', () => {
+        setCSSProperties(this.container, { cursor: 'default' });
+      });
       control.element?.addEventListener('mousedown', (e) => {
         e.stopPropagation();
 
@@ -121,19 +108,18 @@ export class ImageCropper {
     });
   }
 
-  private newCropBox: CropBox | undefined;
-  private newSourceBox: Box | undefined;
-
   private startPoint?: Point;
 
-  private handleMouseMove = async (e: MouseEvent) => {
+  private actionHandler = async (e: MouseEvent) => {
+    const action = this.action as CornerType | 'moving';
+    if (!action) {
+      return;
+    }
     const { cropData, cropCoords, sourceData, sourceCoords } = this;
 
     if (!this.ok || !this.src || !cropData || !sourceData || !cropCoords || !sourceCoords) {
       return;
     }
-
-    const action = this.action as CornerType | 'moving';
 
     const { left, top } = this.element.getBoundingClientRect();
     const pointer = new Point(e.clientX - left, e.clientY - top);
@@ -151,11 +137,18 @@ export class ImageCropper {
       actionCropData = data.cropData;
       actionSourceData = data.sourceData;
     } else if (this.target === this.cropRenderer) {
-      const data = cropScalingHandlerMap[this.action as IControlType]?.({ pointer, cropData, cropCoords, sourceCoords });
+      const data = cropScalingHandler({ pointer, cropData, cropCoords, sourceCoords, corner: this.action as IControlType });
 
       actionCropData = data.cropData;
     } else if (this.target === this.sourceRenderer) {
-      const data = sourceScalingHandlerMap[this.action as IControlType]?.({ pointer, cropData, cropCoords, sourceData, sourceCoords });
+      const data = sourceScalingHandler({
+        pointer,
+        cropData,
+        cropCoords,
+        sourceData,
+        sourceCoords,
+        corner: this.action as IControlType,
+      });
 
       actionCropData = data.cropData;
       actionSourceData = data.sourceData;
@@ -255,33 +248,14 @@ export class ImageCropper {
   }
 
   confirm() {
-    const { cropBox, sourceBox } = this;
-
-    if (!cropBox || !sourceBox) {
-      throw Error('uninit');
-    }
-
     if (!this.inCroppingState) {
-      return { cropBox, sourceBox };
     }
 
     this.hidden('confirm');
-
-    return { cropBox, sourceBox };
   }
 
   cancel() {
-    if (!this.cropBoxBackup || !this.sourceBoxBackup) {
-      throw Error('uninit');
-    }
-
-    if (!this.inCroppingState) {
-      return { cropBox: this.cropBoxBackup, sourceBox: this.sourceBoxBackup };
-    }
-
     this.hidden('cancel');
-
-    return { cropBox: this.cropBoxBackup, sourceBox: this.sourceBoxBackup };
   }
 
   onCropChange(callback: CropChangeCallback) {

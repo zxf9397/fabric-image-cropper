@@ -1,5 +1,5 @@
 import { Control } from './controls.class';
-import { createCropCorner, scaleMap } from './element';
+import { createCropCorner, createCropXoYCorner, scaleMap } from './element';
 import { CSSTransform } from '../utils/cssTransform.class';
 import { createElement, findCornerQuadrant, setCSSProperties } from '../utils/tools';
 
@@ -7,9 +7,11 @@ import type { IControls, IControlType } from './data.d';
 import type { ICropData, ISourceData } from '../cropper/data.d';
 
 export class CropRenderer {
-  private elements!: {
+  public elements!: {
     root: HTMLDivElement;
     image: HTMLImageElement;
+    lower: HTMLDivElement;
+    upper: HTMLDivElement;
   };
   get element() {
     return this.elements.root;
@@ -20,6 +22,10 @@ export class CropRenderer {
     tr: new Control({ x: 1, y: -1, angle: 90, createElement: createCropCorner('tr'), actionName: 'crop' }),
     br: new Control({ x: 1, y: 1, angle: 180, createElement: createCropCorner('br'), actionName: 'crop' }),
     bl: new Control({ x: -1, y: 1, angle: 270, createElement: createCropCorner('bl'), actionName: 'crop' }),
+    ml: new Control({ x: -1, y: 0, angle: 90, createElement: createCropXoYCorner('ml'), actionName: 'crop' }),
+    mr: new Control({ x: 1, y: 0, angle: 90, createElement: createCropXoYCorner('mr'), actionName: 'crop' }),
+    mt: new Control({ x: 0, y: -1, angle: 0, createElement: createCropXoYCorner('mt'), actionName: 'crop' }),
+    mb: new Control({ x: 0, y: 1, angle: 0, createElement: createCropXoYCorner('mb'), actionName: 'crop' }),
   };
 
   private imageLoad = () => {};
@@ -42,7 +48,8 @@ export class CropRenderer {
     lower.appendChild(image);
 
     const upper = createElement('div', { classList: ['fcc-upper-box'] });
-    upper.appendChild(createElement('div', { classList: ['fcc-upper-box-border'] }));
+    // const border = createElement('div', { classList: ['fcc-upper-box-border'] });
+    // upper.appendChild(border);
 
     for (const key in this.controls) {
       const corner = this.controls[key as IControlType]?.element;
@@ -51,7 +58,7 @@ export class CropRenderer {
 
     root.append(lower, upper);
 
-    return { root, image };
+    return { root, image, lower, upper };
   }
 
   render = async (src: string, cropData: ICropData, sourceData: ISourceData) => {
@@ -63,16 +70,23 @@ export class CropRenderer {
     });
 
     setCSSProperties(this.elements.root, {
+      width: `${cropData.width}px`,
+      height: `${cropData.height}px`,
+      transform: new CSSTransform().translate3d(cropData.left, cropData.top).scaleX(cropData.scaleX).scaleY(cropData.scaleY).rotate(cropData.angle)
+        .value,
+    });
+
+    setCSSProperties(this.elements.upper, {
       width: `${cropData.width * cropData.scaleX}px`,
       height: `${cropData.height * cropData.scaleY}px`,
-      transform: new CSSTransform().translate3d(cropData.left, cropData.top, 0).rotate(cropData.angle).value,
+      transform: new CSSTransform().scaleX(1 / cropData.scaleX).scaleY(1 / cropData.scaleY).value,
     });
 
     setCSSProperties(this.elements.image, {
-      width: `${sourceData.width * cropData.scaleX}px`,
-      height: `${sourceData.height * cropData.scaleY}px`,
+      width: `${sourceData.width}px`,
+      height: `${sourceData.height}px`,
       transform: new CSSTransform()
-        .translate3d(-cropData.cropX, -cropData.cropY)
+        .translate3d(-cropData.cropX / cropData.scaleX, -cropData.cropY / cropData.scaleY)
         .scaleX(cropData.flipX ? -1 : 1)
         .scaleY(cropData.flipY ? -1 : 1).value,
     });
