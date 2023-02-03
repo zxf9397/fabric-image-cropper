@@ -9,10 +9,6 @@ export interface ActionEvent {
   corner: string;
 }
 
-const CorsorMap = ['ns', 'nesw', 'ew', 'nwse', 'ns', 'nesw', 'ew', 'nwse'];
-
-function wrapEventHandler() {}
-
 export class Control {
   visible = true;
   actionName = '';
@@ -45,19 +41,29 @@ export class Control {
 
   createElement(): HTMLElement {
     this.element?.remove();
-    return createElement('div');
+    const element = createElement('div');
+    if (!this.visible) {
+      setCSSProperties(element, { display: 'none' });
+    }
+    return element;
   }
 
   render() {
-    if (!this.element || !this.visible) {
+    if (!this.element) {
       return;
     }
+
+    if (!this.visible) {
+      setCSSProperties(this.element, { display: 'none' });
+    }
+
+    this.element.setAttribute('data-action-name', this.actionName);
 
     setCSSProperties(this.element, {
       left: `${(this.x + 1) * 50}%`,
       top: `${(this.y + 1) * 50}%`,
       transform: `translate3d(-50%, -50%, 0) translate3d(${this.offsetX}px, ${this.offsetY}px, 0) rotate(${this.angle}deg)`,
-      cursor: this.cursorStyle,
+      // cursor: this.cursorStyle,
     });
   }
 }

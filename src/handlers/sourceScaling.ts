@@ -60,13 +60,16 @@ export function sourceScalingHandler(data: IScalingHandlerParam) {
   const tl = new Point(localPosition).rotate(angle).add(origin);
   const crop = tl.subtract(cropCoords.tl).rotate(-angle).flipX().flipY();
 
+  const scaleX = cropData.scaleX * scale;
+  const scaleY = cropData.scaleY * scale;
+
   return {
     cropData: {
       ...cropData,
-      cropX: crop.x,
-      cropY: crop.y,
-      scaleX: cropData.scaleX * scale,
-      scaleY: cropData.scaleY * scale,
+      cropX: crop.x / scaleX,
+      cropY: crop.y / scaleY,
+      scaleX,
+      scaleY,
       width: Math.abs(cropData.width) / scale,
       height: Math.abs(cropData.height) / scale,
     },

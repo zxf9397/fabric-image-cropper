@@ -61,8 +61,8 @@ export function cropScalingHandler(data: IScalingHandlerParam): IScalingHandlerR
       top: pos.y,
       width: width / cropData.scaleX,
       height: height / cropData.scaleY,
-      cropX: crop.x,
-      cropY: crop.y,
+      cropX: crop.x / cropData.scaleX,
+      cropY: crop.y / cropData.scaleY,
     },
   };
 }

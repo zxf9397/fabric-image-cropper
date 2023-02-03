@@ -45,7 +45,7 @@ export const sourceMovingHandler = (param: ISouceMovingHandlerParam): ISouceMovi
   const crop = new Point(cropCoords.tl).subtract(tl).rotate(-cropData.angle);
 
   return {
-    cropData: { ...cropData, cropX: crop.x, cropY: crop.y },
+    cropData: { ...cropData, cropX: crop.x / cropData.scaleX, cropY: crop.y / cropData.scaleY },
     sourceData: { ...sourceData, left: tl.x, top: tl.y },
   };
 };

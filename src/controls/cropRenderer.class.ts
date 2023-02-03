@@ -17,7 +17,7 @@ export class CropRenderer {
     return this.elements.root;
   }
 
-  controls: Partial<IControls> = {
+  controls = {
     tl: new Control({ x: -1, y: -1, angle: 0, createElement: createCropCorner('tl'), actionName: 'crop' }),
     tr: new Control({ x: 1, y: -1, angle: 90, createElement: createCropCorner('tr'), actionName: 'crop' }),
     br: new Control({ x: 1, y: 1, angle: 180, createElement: createCropCorner('br'), actionName: 'crop' }),
@@ -53,7 +53,10 @@ export class CropRenderer {
 
     for (const key in this.controls) {
       const corner = this.controls[key as IControlType]?.element;
-      corner && upper.appendChild(corner);
+      if (corner) {
+        corner.setAttribute('data-crop-corner', key);
+        upper.appendChild(corner);
+      }
     }
 
     root.append(lower, upper);
@@ -63,6 +66,8 @@ export class CropRenderer {
 
   render = async (src: string, cropData: ICropData, sourceData: ISourceData) => {
     this.elements.image.src = src;
+    this.elements.upper.setAttribute('data-action-cursor', 'move');
+    this.elements.upper.setAttribute('data-action-name', 'move');
 
     await new Promise<void>((resolve, reject) => {
       this.imageLoad = resolve;
@@ -86,13 +91,14 @@ export class CropRenderer {
       width: `${sourceData.width}px`,
       height: `${sourceData.height}px`,
       transform: new CSSTransform()
-        .translate3d(-cropData.cropX / cropData.scaleX, -cropData.cropY / cropData.scaleY)
+        .translate3d(-cropData.cropX, -cropData.cropY)
         .scaleX(cropData.flipX ? -1 : 1)
         .scaleY(cropData.flipY ? -1 : 1).value,
     });
 
     Object.entries(this.controls).forEach(([corner, control]) => {
       control.cursorStyle = scaleMap[findCornerQuadrant(cropData.angle, control)] + '-resize';
+      control.element?.setAttribute('data-action-cursor', control.cursorStyle);
       control.render();
     });
   };

@@ -4,10 +4,9 @@ import { cropScalingHandler } from '../handlers/cropScaling';
 import { sourceMovingHandler } from '../handlers/sourceMoving';
 import { sourceScalingHandler } from '../handlers/sourceScaling';
 import { Point } from '../utils/point.class';
-import { createElement, getCoords, setCSSProperties } from '../utils/tools';
+import { clamp, createElement, getCoords, setCSSProperties } from '../utils/tools';
 
-import type { CornerType } from '../data.d';
-import type { ICropData, ISourceData } from './data.d';
+import type { CSSCursor, ICropData, ISourceData } from './data.d';
 import type { IControlCoords, IControlType } from '../controls/data.d';
 
 interface CropInfo {
@@ -27,19 +26,45 @@ interface CropChangeCallback {
   (state: boolean, type: CropStart | CropEnd): void;
 }
 
+interface IActionHandler {
+  (cropData: ICropData, sourceData: ISourceData): void;
+}
+
+function getPxStyleNumber(px: string) {
+  return +(px.match(/(\d*.?\d*)px/)?.[1] || 0);
+}
+
 export class ImageCropper {
-  private inCroppingState = false;
-  private action = '';
   private cropChangeCallbacks = new Set<CropChangeCallback>();
+  private actionHandlerCallbacks = new Set<IActionHandler>();
   private sourceRenderer: SourceRenderer;
   private cropRenderer: CropRenderer;
-  private target?: SourceRenderer | CropRenderer;
+
+  private actionCursor: { over?: CSSCursor; down?: CSSCursor } = {};
+
+  private startPoint?: Point;
+
+  private ok = false;
+
+  private cropData?: ICropData;
+  private sourceData?: ISourceData;
+
+  private actionCropData?: ICropData;
+  private actionSourceData?: ISourceData;
+
+  private cropDataBackup!: ICropData;
+  private sourceDataBackup!: ISourceData;
+
+  private cropCoords?: IControlCoords;
+  private sourceCoords?: IControlCoords;
 
   element: HTMLDivElement;
   src?: string;
   visible = false;
   containerOffsetX = 0;
   containerOffsetY = 0;
+
+  private event?: { e: MouseEvent; action?: string; corner?: IControlType; target?: SourceRenderer | CropRenderer };
 
   constructor(private container: HTMLElement, options?: Partial<ImageCropperOptions>) {
     Object.assign(this, options);
@@ -51,67 +76,67 @@ export class ImageCropper {
 
     container.appendChild(this.element);
 
-    document.addEventListener('mousemove', this.actionHandler);
-    document.addEventListener('mouseup', () => {
-      this.target = undefined;
-      this.action = '';
+    this.element.addEventListener('mouseover', (e) => {
+      e.stopPropagation();
 
+      this.actionCursor.over = (e.target as HTMLElement)?.getAttribute('data-action-cursor') || '';
+      setCSSProperties(this.container, { cursor: this.actionCursor.down || this.actionCursor.over });
+    });
+    this.element.addEventListener('mousedown', (e) => {
+      e.stopPropagation();
+
+      this.actionCursor.down = (e.target as HTMLElement)?.getAttribute('data-action-cursor') || '';
+      setCSSProperties(this.container, { cursor: this.actionCursor.down });
+
+      const actionName = (e.target as HTMLElement)?.getAttribute('data-action-name');
+
+      if (actionName === 'move') {
+        this.startPoint = this.getPointer(e);
+
+        this.event = { e, action: 'moving' };
+        this.crop();
+      } else if (actionName === 'scale') {
+        const corner = (e.target as HTMLElement)?.getAttribute('data-scale-corner');
+
+        this.event = { e: e, action: 'scale', corner: corner as IControlType, target: this.sourceRenderer };
+        this.crop();
+      } else if (actionName === 'crop') {
+        const corner = (e.target as HTMLElement)?.getAttribute('data-crop-corner');
+
+        this.event = { e: e, action: 'scale', corner: corner as IControlType, target: this.cropRenderer };
+        this.crop();
+      } else {
+        this.cancel();
+      }
+    });
+    this.element.addEventListener('dblclick', () => {
+      this.confirm();
+    });
+    this.element.addEventListener('mouseup', () => {
+      this.actionCursor.down = '';
+      setCSSProperties(this.container, { cursor: this.actionCursor.down || this.actionCursor.over });
+    });
+
+    document.addEventListener('mousemove', this.actionHandler);
+    document.addEventListener('mouseup', (e) => {
+      this.event = { e };
       this.actionCropData && (this.cropData = this.actionCropData);
       this.actionSourceData && (this.sourceData = this.actionSourceData);
-
-      setCSSProperties(this.container, { cursor: 'default' });
-    });
-    [this.sourceRenderer, this.cropRenderer].forEach(({ element }) => {
-      element.addEventListener('mousedown', (e) => {
-        e.stopPropagation();
-        const { left, top } = this.element.getBoundingClientRect();
-
-        this.startPoint = new Point(e.clientX - left, e.clientY - top);
-
-        this.action = 'moving';
-        this.crop();
-      });
-    });
-    Object.entries(this.sourceRenderer.controls).forEach(([corner, control]) => {
-      control.element?.addEventListener('mouseover', () => {
-        setCSSProperties(this.container, { cursor: control.cursorStyle });
-      });
-      control.element?.addEventListener('mouseleave', () => {
-        setCSSProperties(this.container, { cursor: 'default' });
-      });
-      control.element?.addEventListener('mousedown', (e) => {
-        e.stopPropagation();
-
-        this.target = this.sourceRenderer;
-        this.action = corner;
-        this.crop();
-
-        setCSSProperties(this.container, { cursor: control.cursorStyle });
-      });
-    });
-    Object.entries(this.cropRenderer.controls).forEach(([corner, control]) => {
-      control.element?.addEventListener('mouseover', () => {
-        setCSSProperties(this.container, { cursor: control.cursorStyle });
-      });
-      control.element?.addEventListener('mouseleave', () => {
-        setCSSProperties(this.container, { cursor: 'default' });
-      });
-      control.element?.addEventListener('mousedown', (e) => {
-        e.stopPropagation();
-
-        this.target = this.cropRenderer;
-        this.action = corner;
-        this.crop();
-
-        setCSSProperties(this.container, { cursor: control.cursorStyle });
-      });
     });
   }
 
-  private startPoint?: Point;
+  private getPointer(e: MouseEvent) {
+    const rect = this.element.getBoundingClientRect();
+    const style = window.getComputedStyle(this.element);
+
+    const scaleX = rect.width ? getPxStyleNumber(style.width) / rect.width : 1;
+    const scaleY = rect.height ? getPxStyleNumber(style.height) / rect.height : 1;
+
+    return new Point((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
+  }
 
   private actionHandler = async (e: MouseEvent) => {
-    const action = this.action as CornerType | 'moving';
+    const { action, target, corner } = this.event || {};
     if (!action) {
       return;
     }
@@ -121,8 +146,7 @@ export class ImageCropper {
       return;
     }
 
-    const { left, top } = this.element.getBoundingClientRect();
-    const pointer = new Point(e.clientX - left, e.clientY - top);
+    const pointer = this.getPointer(e);
 
     let actionCropData: ICropData | undefined;
     let actionSourceData: ISourceData | undefined;
@@ -136,22 +160,17 @@ export class ImageCropper {
 
       actionCropData = data.cropData;
       actionSourceData = data.sourceData;
-    } else if (this.target === this.cropRenderer) {
-      const data = cropScalingHandler({ pointer, cropData, cropCoords, sourceCoords, corner: this.action as IControlType });
+    } else if (action === 'scale' && corner) {
+      if (target === this.cropRenderer) {
+        const data = cropScalingHandler({ pointer, cropData, cropCoords, sourceCoords, corner });
 
-      actionCropData = data.cropData;
-    } else if (this.target === this.sourceRenderer) {
-      const data = sourceScalingHandler({
-        pointer,
-        cropData,
-        cropCoords,
-        sourceData,
-        sourceCoords,
-        corner: this.action as IControlType,
-      });
+        actionCropData = data.cropData;
+      } else if (target === this.sourceRenderer) {
+        const data = sourceScalingHandler({ pointer, cropData, cropCoords, sourceData, sourceCoords, corner });
 
-      actionCropData = data.cropData;
-      actionSourceData = data.sourceData;
+        actionCropData = data.cropData;
+        actionSourceData = data.sourceData;
+      }
     }
 
     this.actionCropData = actionCropData;
@@ -159,6 +178,8 @@ export class ImageCropper {
 
     this.cropRenderer.render(this.src, actionCropData || cropData, actionSourceData || sourceData);
     this.sourceRenderer.render(this.src, actionCropData || cropData, actionSourceData || sourceData);
+
+    this.actionHandlerCallbacks.forEach((callback) => callback(actionCropData || cropData, actionSourceData || sourceData));
   };
 
   private createElement() {
@@ -182,29 +203,13 @@ export class ImageCropper {
 
   private show() {
     setCSSProperties(this.element, { display: 'block' });
-    this.inCroppingState = true;
     this.cropChangeCallbacks.forEach((callback) => callback(true, 'crop'));
   }
 
   private hidden(type: CropEnd) {
     setCSSProperties(this.element, { display: 'none' });
-    this.inCroppingState = false;
     this.cropChangeCallbacks.forEach((callback) => callback(false, type));
   }
-
-  private ok = false;
-
-  private cropData?: ICropData;
-  private sourceData?: ISourceData;
-
-  private actionCropData?: ICropData;
-  private actionSourceData?: ISourceData;
-
-  private cropDataBackup?: ICropData;
-  private sourceDataBackup?: ISourceData;
-
-  private cropCoords?: IControlCoords;
-  private sourceCoords?: IControlCoords;
 
   async crop(): Promise<void>;
   async crop(src: string, cropData: ICropData, sourceData: ISourceData): Promise<void>;
@@ -213,8 +218,8 @@ export class ImageCropper {
 
     if (src && cropData && sourceData) {
       this.src = src;
-      this.cropData = { ...(this.cropDataBackup = cropData) };
-      this.sourceData = { ...(this.sourceDataBackup = sourceData) };
+      this.cropData = { ...(this.cropDataBackup = { ...cropData }) };
+      this.sourceData = { ...(this.sourceDataBackup = { ...sourceData }) };
     }
 
     if (!this.src || !this.cropData || !this.sourceData) {
@@ -248,17 +253,20 @@ export class ImageCropper {
   }
 
   confirm() {
-    if (!this.inCroppingState) {
-    }
-
     this.hidden('confirm');
   }
 
   cancel() {
     this.hidden('cancel');
+
+    this.actionHandlerCallbacks.forEach((callback) => callback(this.cropDataBackup, this.sourceDataBackup));
   }
 
   onCropChange(callback: CropChangeCallback) {
     this.cropChangeCallbacks.add(callback);
+  }
+
+  onCrop(callback: IActionHandler) {
+    this.actionHandlerCallbacks.add(callback);
   }
 }

@@ -39,11 +39,21 @@
   left: 0;
   width: 100%;
   height: 100%;
-  outline: 2px solid tomato;
+  outline: 1px solid tomato;
+  box-shadow: inset 0px 0px 0px 1px tomato;
 }
 
 .ra-corner {
   position: absolute;
+}
+
+.ra-corner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .md-corner {

@@ -11,6 +11,8 @@ export class FabricCropListener {
   private canvas?: fabric.Canvas;
   private cropper?: ImageCropper;
 
+  private cropTarget?: fabric.Image;
+
   constructor(canvas: fabric.Canvas) {
     this.canvas = canvas;
 
@@ -23,6 +25,15 @@ export class FabricCropListener {
       this.cropper.element.style.transform = 'translateX(100%)';
 
       this.canvas?.on('mouse:dblclick', this.crop);
+
+      this.cropper.onCrop((crop, source) => {
+        if (this.cropTarget) {
+          this.cropTarget?.set({ ...crop, cropX: crop.cropX, cropY: crop.cropY });
+          this.cropTarget._cropSource = source;
+
+          this.canvas?.renderAll();
+        }
+      });
     }
   }
 
@@ -40,46 +51,9 @@ export class FabricCropListener {
       return;
     }
 
-    const cropBox = {
-      left: actice.left,
-      top: actice.top,
-      width: actice.getScaledWidth(),
-      height: actice.getScaledHeight(),
-      angle: actice.angle,
-      cropX: actice.cropX * actice.scaleX,
-      cropY: actice.cropY * actice.scaleY,
-    };
+    this.cropTarget = actice;
 
-    const sourceBox = {
-      left: actice.left,
-      top: actice.top,
-      width: actice.getScaledWidth(),
-      height: actice.getScaledHeight(),
-      angle: actice.angle,
-    };
-
-    this.cropper.crop(
-      actice.getSrc(),
-      {
-        angle: actice.angle,
-        left: actice.left,
-        top: actice.top,
-        width: actice.width,
-        height: actice.height,
-        scaleX: actice.scaleX,
-        scaleY: actice.scaleY,
-        flipX: actice.flipX,
-        flipY: actice.flipY,
-        cropX: actice.cropX,
-        cropY: actice.cropY,
-      },
-      {
-        left: actice.left,
-        top: actice.top,
-        width: actice.width,
-        height: actice.height,
-      }
-    );
+    this.cropper.crop(actice.getSrc(), actice, actice._cropSource || actice);
   };
 
   confirm() {}

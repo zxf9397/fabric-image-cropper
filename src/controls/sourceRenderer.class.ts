@@ -3,7 +3,7 @@ import { createCropCorner, createCropXoYCorner, scaleMap } from './element';
 import { CSSTransform } from '../utils/cssTransform.class';
 import { createElement, findCornerQuadrant, setCSSProperties } from '../utils/tools';
 
-import type { IControls, IControlType } from './data';
+import type { IControlType } from './data';
 import type { ICropData, ISourceData } from '../cropper/data';
 
 export class SourceRenderer {
@@ -19,15 +19,15 @@ export class SourceRenderer {
     return this.elements.root;
   }
 
-  controls: Partial<IControls> = {
-    tl: new Control({ x: -1, y: -1, angle: 0, createElement: createCropCorner('tl'), actionName: 'crop' }),
-    tr: new Control({ x: 1, y: -1, angle: 90, createElement: createCropCorner('tr'), actionName: 'crop' }),
-    br: new Control({ x: 1, y: 1, angle: 180, createElement: createCropCorner('br'), actionName: 'crop' }),
-    bl: new Control({ x: -1, y: 1, angle: 270, createElement: createCropCorner('bl'), actionName: 'crop' }),
-    ml: new Control({ visible: false, x: -1, y: 0, angle: 90, createElement: createCropXoYCorner('ml'), actionName: 'crop' }),
-    mr: new Control({ visible: false, x: 1, y: 0, angle: 90, createElement: createCropXoYCorner('mr'), actionName: 'crop' }),
-    mt: new Control({ visible: false, x: 0, y: -1, angle: 0, createElement: createCropXoYCorner('mt'), actionName: 'crop' }),
-    mb: new Control({ visible: false, x: 0, y: 1, angle: 0, createElement: createCropXoYCorner('mb'), actionName: 'crop' }),
+  controls = {
+    tl: new Control({ x: -1, y: -1, angle: 0, createElement: createCropCorner('tl'), actionName: 'scale' }),
+    tr: new Control({ x: 1, y: -1, angle: 90, createElement: createCropCorner('tr'), actionName: 'scale' }),
+    br: new Control({ x: 1, y: 1, angle: 180, createElement: createCropCorner('br'), actionName: 'scale' }),
+    bl: new Control({ x: -1, y: 1, angle: 270, createElement: createCropCorner('bl'), actionName: 'scale' }),
+    ml: new Control({ visible: false, x: -1, y: 0, angle: 90, createElement: createCropXoYCorner('ml'), actionName: 'scale' }),
+    mr: new Control({ visible: false, x: 1, y: 0, angle: 90, createElement: createCropXoYCorner('mr'), actionName: 'scale' }),
+    mt: new Control({ visible: false, x: 0, y: -1, angle: 0, createElement: createCropXoYCorner('mt'), actionName: 'scale' }),
+    mb: new Control({ visible: false, x: 0, y: 1, angle: 0, createElement: createCropXoYCorner('mb'), actionName: 'scale' }),
   };
 
   private imageLoad = () => {};
@@ -54,7 +54,10 @@ export class SourceRenderer {
 
     for (const key in this.controls) {
       const corner = this.controls[key as IControlType]?.element;
-      corner && upper.appendChild(corner);
+      if (corner) {
+        corner.setAttribute('data-scale-corner', key);
+        upper.appendChild(corner);
+      }
     }
 
     root.append(lower, upper);
@@ -64,6 +67,9 @@ export class SourceRenderer {
 
   render = async (src: string, cropData: ICropData, sourceData: ISourceData) => {
     this.elements.image.src = src;
+    this.elements.upper.setAttribute('data-action-cursor', 'move');
+    this.elements.upper.setAttribute('data-action-name', 'move');
+
     await new Promise<void>((resolve, reject) => {
       this.imageLoad = resolve;
       this.imageError = reject;
@@ -83,6 +89,7 @@ export class SourceRenderer {
 
     Object.entries(this.controls).forEach(([corner, control]) => {
       control.cursorStyle = scaleMap[findCornerQuadrant(cropData.angle, control)] + '-resize';
+      control.element?.setAttribute('data-action-cursor', control.cursorStyle);
       control.render();
     });
   };

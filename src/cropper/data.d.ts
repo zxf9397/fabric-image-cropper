@@ -1,3 +1,4 @@
+import * as CSS from 'csstype';
 import type { Control } from '../controls/controls.class';
 import type { Point } from '../utils/point.class';
 
@@ -21,3 +22,5 @@ export interface ISourceData {
   width: number;
   height: number;
 }
+
+export type CSSCursor = CSS.Property.Cursor;
