@@ -77,6 +77,6 @@ export class Angle {
 
     const deg = degreeWithin0to360(this._degree);
     this._sin = sinByDegree(deg);
-    this._cos = sinByDegree(deg);
+    this._cos = cosByDegree(deg);
   }
 }

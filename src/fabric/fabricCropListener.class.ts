@@ -1,5 +1,6 @@
-import type { fabric } from 'fabric';
 import { ImageCropper } from '../cropper/cropper.class';
+
+import type { fabric } from 'fabric';
 
 import '../styles/style.css';
 
@@ -34,6 +35,12 @@ export class FabricCropListener {
           this.canvas?.renderAll();
         }
       });
+
+      this.cropper.onCropCancel((crop) => {
+        this.cropTarget?.set({ ...crop, cropX: crop.cropX, cropY: crop.cropY });
+
+        this.canvas?.renderAll();
+      });
     }
   }
 
@@ -53,7 +60,9 @@ export class FabricCropListener {
 
     this.cropTarget = actice;
 
-    this.cropper.crop(actice.getSrc(), actice, actice._cropSource || actice);
+    const object = actice.toObject();
+
+    this.cropper.crop(actice.getSrc(), object, actice._cropSource || object);
   };
 
   confirm() {}

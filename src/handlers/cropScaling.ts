@@ -1,7 +1,7 @@
 import { Point } from '../utils/point.class';
 import { clamp } from '../utils/tools';
 
-import type { ICropData } from '../cropper/data.d';
+import type { ICropData, ISourceData } from '../cropper/data.d';
 import type { IControlCoords, IControlType } from '../controls/data.d';
 
 interface IScalingHandlerReturns {
@@ -12,6 +12,7 @@ interface IScalingHandlerParam extends IScalingHandlerReturns {
   pointer: Point;
   corner: IControlType;
   cropCoords: IControlCoords;
+  sourceData: ISourceData;
   sourceCoords: IControlCoords;
 }
 
@@ -27,7 +28,7 @@ export enum AcrossCornersMapping {
 }
 
 export function cropScalingHandler(data: IScalingHandlerParam): IScalingHandlerReturns {
-  const { pointer, cropData, cropCoords, sourceCoords, corner } = data;
+  const { pointer, cropData, cropCoords, sourceData, sourceCoords, corner } = data;
   const angle = cropData.angle;
   const origin = cropCoords[AcrossCornersMapping[corner]];
 

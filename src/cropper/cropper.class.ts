@@ -38,6 +38,9 @@ function getPxStyleNumber(px: string) {
 export class ImageCropper {
   private cropChangeCallbacks = new Set<CropChangeCallback>();
   private actionHandlerCallbacks = new Set<IActionHandler>();
+  private cropConfirmCallbacks = new Set<IActionHandler>();
+  private cropCancelCallbacks = new Set<IActionHandler>();
+
   private sourceRenderer = new SourceRenderer();
   private cropRenderer = new CropRenderer();
 
@@ -160,7 +163,7 @@ export class ImageCropper {
       actionSourceData = data.sourceData;
     } else if (action === 'scale' && corner) {
       if (target === this.cropRenderer) {
-        const data = cropScalingHandler({ pointer, cropData, cropCoords, sourceCoords, corner });
+        const data = cropScalingHandler({ pointer, cropData, cropCoords, sourceData, sourceCoords, corner });
 
         actionCropData = data.cropData;
       } else if (target === this.sourceRenderer) {
@@ -177,7 +180,17 @@ export class ImageCropper {
     this.cropRenderer.render(this.src, actionCropData || cropData, actionSourceData || sourceData, this.angle);
     this.sourceRenderer.render(this.src, actionCropData || cropData, actionSourceData || sourceData, this.angle);
 
-    this.actionHandlerCallbacks.forEach((callback) => callback(actionCropData || cropData, actionSourceData || sourceData));
+    const newCropData = { ...(actionCropData || cropData) };
+    const newSourceData = { ...(actionSourceData || sourceData) };
+
+    if (newCropData.flipX) {
+      newCropData.cropX = newSourceData.width - newCropData.width - newCropData.cropX;
+    }
+    if (newCropData.flipY) {
+      newCropData.cropY = newSourceData.height - newCropData.height - newCropData.cropY;
+    }
+
+    this.actionHandlerCallbacks.forEach((callback) => callback(newCropData, newSourceData));
   };
 
   private createElement() {
@@ -221,6 +234,15 @@ export class ImageCropper {
     this.sourceData = { ...sourceData };
 
     this.angle = new Angle(this.cropData.angle);
+
+    const { cropX, cropY, scaleX, scaleY, angle, flipX, flipY, left, top } = this.cropData;
+
+    this.cropData.cropX = flipX ? this.sourceData.width - this.cropData.width - cropX : cropX;
+    this.cropData.cropY = flipY ? this.sourceData.height - this.cropData.height - cropY : cropY;
+
+    const sourcePosition = new Point(-this.cropData.cropX * scaleX, -this.cropData.cropY * scaleY).rotate(angle).add({ x: left, y: top });
+    this.sourceData.left = sourcePosition.x;
+    this.sourceData.top = sourcePosition.y;
   }
 
   private async setCoords() {
@@ -262,12 +284,15 @@ export class ImageCropper {
 
   public confirm() {
     this.cropEnd('confirm');
+
+    this.cropConfirmCallbacks.forEach((callback) => callback(this.cropData, this.sourceData));
   }
 
   public cancel() {
     this.cropEnd('cancel');
 
-    this.actionHandlerCallbacks.forEach((callback) => callback(this.cropDataBackup, this.sourceDataBackup));
+    // this.actionHandlerCallbacks.forEach((callback) => callback(this.cropDataBackup, this.sourceDataBackup));
+    this.cropCancelCallbacks.forEach((callback) => callback(this.cropDataBackup, this.sourceDataBackup));
   }
 
   public onCropChange(callback: CropChangeCallback) {
@@ -276,5 +301,13 @@ export class ImageCropper {
 
   public onCrop(callback: IActionHandler) {
     this.actionHandlerCallbacks.add(callback);
+  }
+
+  public onCropConfirm(callback: IActionHandler) {
+    this.cropConfirmCallbacks.add(callback);
+  }
+
+  public onCropCancel(callback: IActionHandler) {
+    this.cropCancelCallbacks.add(callback);
   }
 }

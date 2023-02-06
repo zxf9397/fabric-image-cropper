@@ -24,7 +24,15 @@ function fabricImageFromURL(url: string, imgOptions?: fabric.IImageOptions) {
 }
 
 (async () => {
-  const image = (await fabricImageFromURL('/pic.png', { left: 100, top: 100, scaleX: -0.5, scaleY: -0.5, angle: 0 })) as Required<fabric.Image>;
+  const image = (await fabricImageFromURL('/pic.png', {
+    left: 100,
+    top: 100,
+    scaleX: -0.6,
+    scaleY: -0.5,
+    angle: 0,
+    flipX: true,
+    flipY: true,
+  })) as Required<fabric.Image>;
 
   fabricCanvas.add(image).renderAll();
 
