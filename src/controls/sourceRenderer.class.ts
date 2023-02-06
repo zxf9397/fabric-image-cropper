@@ -1,6 +1,7 @@
 import { Control } from './controls.class';
 import { createCropCorner, createCropXoYCorner, scaleMap } from './element';
 import { CSSTransform } from '../utils/cssTransform.class';
+import { Angle } from '../utils/angle.class';
 import { createElement, findCornerQuadrant, setCSSProperties } from '../utils/tools';
 
 import type { IControlType } from './data';
@@ -65,7 +66,7 @@ export class SourceRenderer {
     return { root, image, lower, upper, border };
   }
 
-  render = async (src: string, cropData: ICropData, sourceData: ISourceData) => {
+  render = async (src: string, cropData: ICropData, sourceData: ISourceData, angle: Angle) => {
     this.elements.image.src = src;
     this.elements.upper.setAttribute('data-action-cursor', 'move');
     this.elements.upper.setAttribute('data-action-name', 'move');
@@ -78,13 +79,24 @@ export class SourceRenderer {
     setCSSProperties(this.elements.root, {
       width: `${sourceData.width}px`,
       height: `${sourceData.height}px`,
-      transform: `matrix(${cropData.scaleX}, 0, 0, ${cropData.scaleY}, ${sourceData.left}, ${sourceData.top}) rotate(${cropData.angle}deg)`,
+      transform: new CSSTransform().matrix([
+        angle.cos * cropData.scaleX,
+        angle.sin * cropData.scaleX,
+        -angle.sin * cropData.scaleY,
+        angle.cos * cropData.scaleY,
+        sourceData.left,
+        sourceData.top,
+      ]).value,
     });
 
     setCSSProperties(this.elements.upper, {
       width: `${sourceData.width * cropData.scaleX}px`,
       height: `${sourceData.height * cropData.scaleY}px`,
       transform: new CSSTransform().scaleX(1 / cropData.scaleX).scaleY(1 / cropData.scaleY).value,
+    });
+
+    setCSSProperties(this.elements.image, {
+      transform: new CSSTransform().scaleX(cropData.flipX ? -1 : 1).scaleY(cropData.flipY ? -1 : 1).value,
     });
 
     Object.entries(this.controls).forEach(([corner, control]) => {

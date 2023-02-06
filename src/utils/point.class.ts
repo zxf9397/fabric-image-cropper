@@ -1,5 +1,4 @@
-import { cosByDegree, degreeWithin0to360, sinByDegree } from './math';
-import { degreesToRadians } from './tools';
+import { cosByDegree, degreeWithin0to360, sinByDegree } from './angle.class';
 
 export interface IPoint {
   x: number;

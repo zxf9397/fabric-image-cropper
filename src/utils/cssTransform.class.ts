@@ -24,4 +24,9 @@ export class CSSTransform {
     this.transform += `scaleY(${scaleY}) `;
     return this;
   }
+
+  matrix(matrix: number[]) {
+    this.transform += `matrix(${matrix[0]},${matrix[1]},${matrix[2]},${matrix[3]},${matrix[4]},${matrix[5]})`;
+    return this;
+  }
 }
