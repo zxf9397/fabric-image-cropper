@@ -1,12 +1,13 @@
 import fs from 'fs';
 import path from 'path';
 import { defineConfig } from 'vite';
+import dts from 'vite-plugin-dts';
 
 export default defineConfig({
   server: {
     port: 3334,
   },
-  plugins: [excludeOutDir('gallery')],
+  plugins: [dts({ tsConfigFilePath: path.relative(__dirname, './tsconfig.json'), exclude: ['test/**'] }), excludeOutDir('gallery')],
   build: {
     emptyOutDir: true,
     lib: {

@@ -13,7 +13,12 @@ declare module 'fabric' {
     }
 
     interface IImageOptions {
-      imageCropper?: {};
+      _cropSource?: {
+        left: number;
+        top: number;
+        width: number;
+        height: number;
+      };
     }
   }
 }
