@@ -24,7 +24,7 @@ function fabricImageFromURL(url: string, imgOptions?: fabric.IImageOptions) {
 }
 
 (async () => {
-  const image = (await fabricImageFromURL('/pic.png', {
+  const image = (await fabricImageFromURL('/gallery/pic.png', {
     left: 100,
     top: 100,
     scaleX: -0.6,
