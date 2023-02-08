@@ -1,5 +1,6 @@
 .image-cropper-container {
   user-select: none;
+  z-index: 1;
 }
 
 .image-cropper-container::before {

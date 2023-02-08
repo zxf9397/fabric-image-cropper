@@ -1,6 +1,4 @@
 import * as CSS from 'csstype';
-import type { Control } from '../controls/controls.class';
-import type { Point } from '../utils/point.class';
 
 export interface ICropData {
   angle: number;

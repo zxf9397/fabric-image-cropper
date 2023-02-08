@@ -7,7 +7,12 @@ export default defineConfig({
   server: {
     port: 3334,
   },
-  plugins: [dts({ tsConfigFilePath: path.relative(__dirname, './tsconfig.json'), exclude: ['test/**'] }), excludeOutDir('gallery')],
+  plugins: [
+    dts({
+      outputDir: path.resolve(__dirname, './lib'),
+    }),
+    excludeOutDir('gallery'),
+  ],
   build: {
     emptyOutDir: true,
     lib: {

@@ -400,7 +400,10 @@ class F {
           g = f.cropData, m = f.sourceData;
         }
       }
-      this.actionCropData = g, this.actionSourceData = m, this.cropRenderer.render(this.src, g || o, m || l, this.angle), this.sourceRenderer.render(this.src, g || o, m || l, this.angle);
+      this.actionCropData = g, this.actionSourceData = m, await Promise.all([
+        this.cropRenderer.render(this.src, g || o, m || l, this.angle),
+        this.sourceRenderer.render(this.src, g || o, m || l, this.angle)
+      ]);
       const u = { ...g || o }, C = { ...m || l };
       u.flipX && (u.cropX = C.width - u.width - u.cropX), u.flipY && (u.cropY = C.height - u.height - u.cropY), this.actionHandlerCallbacks.forEach((f) => f(u, C));
     }, Object.assign(this, e), this._element = this.createElement(), this._element.append(this.sourceRenderer.element, this.cropRenderer.element), t.appendChild(this._element), this._element.addEventListener("mouseover", (s) => {
