@@ -33,6 +33,10 @@
   transform-origin: left top;
 }
 
+.image-cropper-crop .fcc-upper-box {
+  background: tomato;
+}
+
 .fcc-upper-box::before {
   content: '';
   position: absolute;
@@ -40,8 +44,8 @@
   left: 0;
   width: 100%;
   height: 100%;
-  outline: 1px solid tomato;
-  box-shadow: inset 0px 0px 0px 1px tomato;
+  /* outline: 1px solid tomato;
+  box-shadow: inset 0px 0px 0px 1px tomato; */
 }
 
 .ra-corner {

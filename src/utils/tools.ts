@@ -15,7 +15,7 @@ export function findCornerQuadrant(angle: number, control: Control) {
 export function createElement<T extends keyof HTMLElementTagNameMap>(tagName: T, param?: IElementParam<T>) {
   const element = document.createElement(tagName);
 
-  param?.classList?.length && element.classList.add(...param.classList);
+  param?.classList?.length && element.classList.add(...param.classList.filter((item) => !!item));
   param?.style && setCSSProperties(element, param.style);
 
   return element;

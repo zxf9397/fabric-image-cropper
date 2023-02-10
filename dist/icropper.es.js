@@ -141,6 +141,7 @@ class y {
       left: `${(this.x + 1) * 50}%`,
       top: `${(this.y + 1) * 50}%`,
       transform: `translate3d(-50%, -50%, 0) translate3d(${this.offsetX}px, ${this.offsetY}px, 0) rotate(${this.angle}deg)`
+      // cursor: this.cursorStyle,
     }));
   }
 }
@@ -506,6 +507,11 @@ class F {
   }
   onCropCancel(t) {
     this.cropCancelCallbacks.add(t);
+  }
+  /**
+   * remove all event listeners
+   */
+  dispose() {
   }
 }
 function tt(r) {

@@ -1,6 +1,8 @@
 import { createElement, setCSSProperties } from '../utils/tools';
 
 import type { IPoint } from '../utils/point.class';
+import { CSSTransform } from '../utils/cssTransform.class';
+import { degreeWithin0to360 } from '../utils/angle.class';
 
 export interface ActionEvent {
   e: MouseEvent;
@@ -17,6 +19,8 @@ export class Control {
   y = 0;
   offsetX = 0;
   offsetY = 0;
+  scaleX = 1;
+  scaleY = 1;
   cursorStyle = 'default';
 
   element?: HTMLElement;
@@ -62,8 +66,12 @@ export class Control {
     setCSSProperties(this.element, {
       left: `${(this.x + 1) * 50}%`,
       top: `${(this.y + 1) * 50}%`,
-      transform: `translate3d(-50%, -50%, 0) translate3d(${this.offsetX}px, ${this.offsetY}px, 0) rotate(${this.angle}deg)`,
-      // cursor: this.cursorStyle,
+      transform: new CSSTransform()
+        .translate('-50%', '-50%')
+        .translate(this.offsetX, this.offsetY)
+        .rotate(this.angle)
+        .scaleX(this.angle % 180 === 90 ? this.scaleY : this.scaleX)
+        .scaleY(this.angle % 180 === 90 ? this.scaleX : this.scaleY).value,
     });
   }
 }

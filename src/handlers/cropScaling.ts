@@ -38,8 +38,8 @@ export function cropScalingHandler(data: IScalingHandlerParam): IScalingHandlerR
   const absWdith = Math.sign(toOrigin.x) === Math.sign(maxSize.x) ? Math.abs(toOrigin.x) : 0;
   const absHeight = Math.sign(toOrigin.y) === Math.sign(maxSize.y) ? Math.abs(toOrigin.y) : 0;
 
-  let width = clamp(absWdith, 0, Math.abs(maxSize.x));
-  let height = clamp(absHeight, 0, Math.abs(maxSize.y));
+  let width = clamp(absWdith, 16, Math.abs(maxSize.x));
+  let height = clamp(absHeight, 16, Math.abs(maxSize.y));
 
   const localPosition = {
     tl: () => ({ x: -width, y: -height }),

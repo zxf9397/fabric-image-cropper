@@ -1,32 +1,36 @@
+function toNumberPadEnd(param: number | string, numPadEnd: string) {
+  return typeof param === 'number' ? param + numPadEnd : param;
+}
+
 export class CSSTransform {
   private transform = '';
 
-  get value() {
+  public get value() {
     return this.transform;
   }
 
-  translate3d(x = 0, y = 0, z = 0) {
-    this.transform += `translate3d(${x}px, ${y}px, ${z}px) `;
+  public translate(x: number | string = 0, y: number | string = 0) {
+    this.transform += `translate(${toNumberPadEnd(x, 'px')}, ${toNumberPadEnd(y, 'px')}) `;
     return this;
   }
 
-  rotate(deg: number) {
+  public rotate(deg: number) {
     this.transform += `rotate(${deg}deg) `;
     return this;
   }
 
-  scaleX(scaleX: number) {
+  public scaleX(scaleX: number) {
     this.transform += `scaleX(${scaleX}) `;
     return this;
   }
 
-  scaleY(scaleY: number) {
+  public scaleY(scaleY: number) {
     this.transform += `scaleY(${scaleY}) `;
     return this;
   }
 
-  matrix(matrix: number[]) {
-    this.transform += `matrix(${matrix[0]},${matrix[1]},${matrix[2]},${matrix[3]},${matrix[4]},${matrix[5]})`;
+  public matrix(matrix: [number, number, number, number, number, number]) {
+    this.transform += `matrix(${matrix[0]},${matrix[1]},${matrix[2]},${matrix[3]},${matrix[4]},${matrix[5]}) `;
     return this;
   }
 }

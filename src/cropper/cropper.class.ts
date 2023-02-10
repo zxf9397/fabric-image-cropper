@@ -178,7 +178,7 @@ export class ImageCropper {
     this.actionSourceData = actionSourceData;
 
     await Promise.all([
-      this.cropRenderer.render(this.src, actionCropData || cropData, actionSourceData || sourceData, this.angle),
+      this.cropRenderer.render(this.src, actionCropData || cropData, actionSourceData || sourceData, this.angle, this.cropDataBackup),
       this.sourceRenderer.render(this.src, actionCropData || cropData, actionSourceData || sourceData, this.angle),
     ]);
 
@@ -265,7 +265,7 @@ export class ImageCropper {
     });
 
     return Promise.all([
-      this.cropRenderer.render(this.src, this.cropData, this.sourceData, this.angle),
+      this.cropRenderer.render(this.src, this.cropData, this.sourceData, this.angle, this.cropDataBackup),
       this.sourceRenderer.render(this.src, this.cropData, this.sourceData, this.angle),
     ]);
   }
