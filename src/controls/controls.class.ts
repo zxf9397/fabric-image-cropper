@@ -3,6 +3,7 @@ import { createElement, setCSSProperties } from '../utils/tools';
 import type { IPoint } from '../utils/point.class';
 import { CSSTransform } from '../utils/cssTransform.class';
 import { degreeWithin0to360 } from '../utils/angle.class';
+import { AttributesData } from './const';
 
 export interface ActionEvent {
   e: MouseEvent;
@@ -12,16 +13,16 @@ export interface ActionEvent {
 }
 
 export class Control {
-  visible = true;
-  actionName = '';
-  angle = 0;
-  x = 0;
-  y = 0;
-  offsetX = 0;
-  offsetY = 0;
-  scaleX = 1;
-  scaleY = 1;
-  cursorStyle = 'default';
+  public visible = true;
+  public actionName = '';
+  public angle = 0;
+  public x = 0;
+  public y = 0;
+  public offsetX = 0;
+  public offsetY = 0;
+  public scaleX = 1;
+  public scaleY = 1;
+  public cursorStyle = 'default';
 
   element?: HTMLElement;
 
@@ -61,7 +62,7 @@ export class Control {
       setCSSProperties(this.element, { display: 'none' });
     }
 
-    this.element.setAttribute('data-action-name', this.actionName);
+    this.element.setAttribute(AttributesData.ActionName, this.actionName);
 
     setCSSProperties(this.element, {
       left: `${(this.x + 1) * 50}%`,

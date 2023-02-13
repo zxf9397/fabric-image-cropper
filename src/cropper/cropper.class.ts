@@ -9,6 +9,7 @@ import { createElement, getCoords, setCSSProperties } from '../utils/tools';
 
 import type { CSSCursor, ICropData, ISourceData } from './data.d';
 import type { IControlCoords, IControlType } from '../controls/data.d';
+import { AttributesData } from '../controls/const';
 
 interface CropInfo {
   src: string;
@@ -84,16 +85,16 @@ export class ImageCropper {
     this._element.addEventListener('mouseover', (e) => {
       e.stopPropagation();
 
-      this.actionCursor.over = (e.target as HTMLElement)?.getAttribute('data-action-cursor') || '';
+      this.actionCursor.over = (e.target as HTMLElement)?.getAttribute(AttributesData.ActionCursor) || '';
       setCSSProperties(this.container, { cursor: this.actionCursor.down || this.actionCursor.over });
     });
     this._element.addEventListener('mousedown', (e) => {
       e.stopPropagation();
 
-      this.actionCursor.down = (e.target as HTMLElement)?.getAttribute('data-action-cursor') || '';
+      this.actionCursor.down = (e.target as HTMLElement)?.getAttribute(AttributesData.ActionCursor) || '';
       setCSSProperties(this.container, { cursor: this.actionCursor.down });
 
-      const actionName = (e.target as HTMLElement)?.getAttribute('data-action-name');
+      const actionName = (e.target as HTMLElement)?.getAttribute(AttributesData.ActionName);
 
       if (actionName === 'move') {
         this.startPoint = this.getPointer(e);
@@ -101,12 +102,12 @@ export class ImageCropper {
         this.event = { e, action: 'moving' };
         this.setCoords();
       } else if (actionName === 'scale') {
-        const corner = (e.target as HTMLElement)?.getAttribute('data-scale-corner');
+        const corner = (e.target as HTMLElement)?.getAttribute(AttributesData.ScaleCorner);
 
         this.event = { e: e, action: 'scale', corner: corner as IControlType, target: this.sourceRenderer };
         this.setCoords();
       } else if (actionName === 'crop') {
-        const corner = (e.target as HTMLElement)?.getAttribute('data-crop-corner');
+        const corner = (e.target as HTMLElement)?.getAttribute(AttributesData.CropCorner);
 
         this.event = { e: e, action: 'scale', corner: corner as IControlType, target: this.cropRenderer };
         this.setCoords();
@@ -179,7 +180,7 @@ export class ImageCropper {
 
     await Promise.all([
       this.cropRenderer.render(this.src, actionCropData || cropData, actionSourceData || sourceData, this.angle, this.cropDataBackup),
-      this.sourceRenderer.render(this.src, actionCropData || cropData, actionSourceData || sourceData, this.angle),
+      this.sourceRenderer.render(this.src, actionCropData || cropData, actionSourceData || sourceData, this.angle, this.sourceDataBackup),
     ]);
 
     const newCropData = { ...(actionCropData || cropData) };
@@ -199,7 +200,7 @@ export class ImageCropper {
     const { borderLeftWidth, borderTopWidth, border, width, height, position } = window.getComputedStyle(this.container);
 
     return createElement('div', {
-      classList: ['image-cropper-container'],
+      classList: ['ic-container'],
       style: {
         display: this.visible ? 'block' : 'none',
         position: position !== 'static' ? 'absolute' : 'relative',
@@ -266,7 +267,7 @@ export class ImageCropper {
 
     return Promise.all([
       this.cropRenderer.render(this.src, this.cropData, this.sourceData, this.angle, this.cropDataBackup),
-      this.sourceRenderer.render(this.src, this.cropData, this.sourceData, this.angle),
+      this.sourceRenderer.render(this.src, this.cropData, this.sourceData, this.angle, this.sourceDataBackup),
     ]);
   }
 
