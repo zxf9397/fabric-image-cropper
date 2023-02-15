@@ -36,5 +36,9 @@ function fabricImageFromURL(url: string, imgOptions?: fabric.IImageOptions) {
 
   fabricCanvas.add(image).renderAll();
 
-  new FabricCropListener(fabricCanvas);
+  const listener = new FabricCropListener(fabricCanvas);
+
+  cropButton.addEventListener('click', listener.crop.bind(listener));
+  confirmButton.addEventListener('click', listener.confirm.bind(listener));
+  cancelButton.addEventListener('click', listener.cancel.bind(listener));
 })();

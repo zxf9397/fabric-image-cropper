@@ -1,19 +1,7 @@
+import type { IScalingHandlerParam, IScalingHandlerReturns } from './data.d';
+
 import { AcrossCornersMapping } from './cropScaling';
 import { Point } from '../utils/point.class';
-
-import type { ICropData, ISourceData } from '../cropper/data.d';
-import type { IControlCoords, IControlType } from '../controls/data.d';
-
-interface IScalingHandlerReturns {
-  cropData: ICropData;
-  sourceData: ISourceData;
-}
-interface IScalingHandlerParam extends IScalingHandlerReturns {
-  pointer: Point;
-  corner: IControlType;
-  cropCoords: IControlCoords;
-  sourceCoords: IControlCoords;
-}
 
 enum raote {
   tl = 0,
@@ -26,26 +14,30 @@ enum raote {
   mb = 0,
 }
 
-export function sourceScalingHandler(data: IScalingHandlerParam) {
-  const { pointer, sourceCoords, cropData, sourceData, cropCoords, corner } = data;
-  const angle = cropData.angle;
-  const origin = sourceCoords[AcrossCornersMapping[corner]];
-  const scaledWidth = sourceData.width * cropData.scaleX;
-  const scaledHeight = sourceData.height * cropData.scaleY;
+export function sourceScalingHandler(data: IScalingHandlerParam): IScalingHandlerReturns {
+  const { pointer, sourceControlCoords, croppedData, sourceData, croppedControlCoords, corner } = data;
+  const angle = croppedData.angle;
+  const origin = sourceControlCoords[AcrossCornersMapping[corner]];
+  const scaledWidth = sourceData.width * croppedData.scaleX;
+  const scaledHeight = sourceData.height * croppedData.scaleY;
 
-  const opposite = new Point(sourceCoords[AcrossCornersMapping[corner]]).subtract(sourceCoords[corner]).rotate(-angle);
+  const opposite = new Point(sourceControlCoords[AcrossCornersMapping[corner]]).subtract(sourceControlCoords[corner]).rotate(-angle);
   const degreeToX = Math.asin((scaledHeight * Math.sign(opposite.x)) / opposite.distanceFrom()) / (Math.PI / 180) + raote[corner];
 
   const originSize = opposite.rotate(-degreeToX);
   const toOriginX = pointer.subtract(origin).rotate(-angle - degreeToX);
 
-  const minSize = new Point(cropCoords[corner]).subtract(origin).rotate(-angle);
+  const minSize = new Point(croppedControlCoords[corner]).subtract(origin).rotate(-angle);
 
   const scale = Math.max(Math.abs(toOriginX.x) / Math.abs(originSize.x), Math.abs(minSize.x) / scaledWidth, Math.abs(minSize.y) / scaledHeight);
 
-  let width = scaledWidth * scale;
-  let height = scaledHeight * scale;
+  const width = scaledWidth * scale;
+  const height = scaledHeight * scale;
 
+  /**
+   * TODO:
+   * 1. ml、mr、mt、mb control has not been implemented.
+   */
   const localPosition = {
     tl: () => ({ x: -width, y: -height }),
     br: () => ({ x: 0, y: 0 }),
@@ -57,22 +49,22 @@ export function sourceScalingHandler(data: IScalingHandlerParam) {
     mb: () => ({ x: -width / 2, y: 0 }),
   }[corner]();
 
-  const tl = new Point(localPosition).rotate(angle).add(origin);
-  const crop = tl.subtract(cropCoords.tl).rotate(-angle).flipX().flipY();
+  const position = new Point(localPosition).rotate(angle).add(origin);
+  const crop = position.subtract(croppedControlCoords.tl).rotate(-angle).flipX().flipY();
 
-  const scaleX = cropData.scaleX * scale;
-  const scaleY = cropData.scaleY * scale;
+  const scaleX = croppedData.scaleX * scale;
+  const scaleY = croppedData.scaleY * scale;
 
   return {
-    cropData: {
-      ...cropData,
+    croppedData: {
+      ...croppedData,
       cropX: crop.x / scaleX,
       cropY: crop.y / scaleY,
       scaleX,
       scaleY,
-      width: Math.abs(cropData.width) / scale,
-      height: Math.abs(cropData.height) / scale,
+      width: croppedData.width / scale,
+      height: croppedData.height / scale,
     },
-    sourceData: { ...sourceData, left: tl.x, top: tl.y },
+    sourceData: { ...sourceData, left: position.x, top: position.y },
   };
 }

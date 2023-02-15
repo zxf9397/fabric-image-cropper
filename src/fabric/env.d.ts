@@ -14,8 +14,6 @@ declare module 'fabric' {
 
     interface IImageOptions {
       _cropSource?: {
-        left: number;
-        top: number;
         width: number;
         height: number;
       };

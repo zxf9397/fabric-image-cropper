@@ -1,20 +1,7 @@
+import type { IScalingHandlerParam, IScalingHandlerReturns } from './data.d';
+
 import { Point } from '../utils/point.class';
 import { clamp } from '../utils/tools';
-
-import type { ICropData, ISourceData } from '../cropper/data.d';
-import type { IControlCoords, IControlType } from '../controls/data.d';
-
-interface IScalingHandlerReturns {
-  cropData: ICropData;
-}
-
-interface IScalingHandlerParam extends IScalingHandlerReturns {
-  pointer: Point;
-  corner: IControlType;
-  cropCoords: IControlCoords;
-  sourceData: ISourceData;
-  sourceCoords: IControlCoords;
-}
 
 export enum AcrossCornersMapping {
   tl = 'br',
@@ -27,13 +14,18 @@ export enum AcrossCornersMapping {
   mb = 'mt',
 }
 
+/**
+ * TODO:
+ * 1. Proportional cropping
+ * 2. Custom proportion cropping, (1:1) ext.
+ */
 export function cropScalingHandler(data: IScalingHandlerParam): IScalingHandlerReturns {
-  const { pointer, cropData, cropCoords, sourceData, sourceCoords, corner } = data;
-  const angle = cropData.angle;
-  const origin = cropCoords[AcrossCornersMapping[corner]];
+  const { pointer, croppedData, croppedControlCoords, sourceData, sourceControlCoords, corner } = data;
+  const angle = croppedData.angle;
+  const origin = croppedControlCoords[AcrossCornersMapping[corner]];
 
   const toOrigin = pointer.subtract(origin).rotate(-angle);
-  const maxSize = new Point(sourceCoords[corner]).subtract(origin).rotate(-angle);
+  const maxSize = new Point(sourceControlCoords[corner]).subtract(origin).rotate(-angle);
 
   const absWdith = Math.sign(toOrigin.x) === Math.sign(maxSize.x) ? Math.abs(toOrigin.x) : 0;
   const absHeight = Math.sign(toOrigin.y) === Math.sign(maxSize.y) ? Math.abs(toOrigin.y) : 0;
@@ -46,24 +38,25 @@ export function cropScalingHandler(data: IScalingHandlerParam): IScalingHandlerR
     bl: () => ({ x: -width, y: 0 }),
     tr: () => ({ x: 0, y: -height }),
     br: () => ({ x: 0, y: 0 }),
-    ml: () => ({ x: -width, y: -(height = cropData.height * cropData.scaleY) / 2 }),
-    mr: () => ({ x: 0, y: -(height = cropData.height * cropData.scaleY) / 2 }),
-    mt: () => ({ x: -(width = cropData.width * cropData.scaleX) / 2, y: -height }),
-    mb: () => ({ x: -(width = cropData.width * cropData.scaleX) / 2, y: 0 }),
+    ml: () => ({ x: -width, y: -(height = croppedData.height * croppedData.scaleY) / 2 }),
+    mr: () => ({ x: 0, y: -(height = croppedData.height * croppedData.scaleY) / 2 }),
+    mt: () => ({ x: -(width = croppedData.width * croppedData.scaleX) / 2, y: -height }),
+    mb: () => ({ x: -(width = croppedData.width * croppedData.scaleX) / 2, y: 0 }),
   };
 
-  const pos = new Point(localPosition[corner]()).rotate(angle).add(origin);
-  const crop = pos.subtract(sourceCoords.tl).rotate(-angle);
+  const position = new Point(localPosition[corner]()).rotate(angle).add(origin);
+  const crop = position.subtract(sourceControlCoords.tl).rotate(-angle);
 
   return {
-    cropData: {
-      ...cropData,
-      left: pos.x,
-      top: pos.y,
-      width: width / cropData.scaleX,
-      height: height / cropData.scaleY,
-      cropX: crop.x / cropData.scaleX,
-      cropY: crop.y / cropData.scaleY,
+    croppedData: {
+      ...croppedData,
+      left: position.x,
+      top: position.y,
+      width: width / croppedData.scaleX,
+      height: height / croppedData.scaleY,
+      cropX: crop.x / croppedData.scaleX,
+      cropY: crop.y / croppedData.scaleY,
     },
+    sourceData,
   };
 }

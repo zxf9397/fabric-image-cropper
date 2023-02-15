@@ -1,6 +1,5 @@
 import { ImageCropper } from '../cropper/cropper.class';
-
-import type { fabric } from 'fabric';
+import { fabric } from 'fabric';
 
 import '../styles/style.css';
 
@@ -22,36 +21,52 @@ export class FabricCropListener {
 
   private init() {
     if (this.canvas) {
-      this.cropper = new ImageCropper(this.canvas.wrapperEl, { containerOffsetX: 2, containerOffsetY: 2 });
+      this.cropper = new ImageCropper(this.canvas.wrapperEl, { containerOffsetX: 2, containerOffsetY: 2, borderColor: 'purple' });
       this.cropper.element.style.transform = 'translateX(100%)';
 
       this.canvas?.on('mouse:dblclick', this.crop);
 
-      this.cropper.onCrop((crop, source) => {
+      this.cropper.on('cropping', (crop, source) => {
         if (this.cropTarget) {
-          this.cropTarget?.set({ ...crop, cropX: crop.cropX, cropY: crop.cropY });
+          this.cropTarget.set({ ...crop, cropX: crop.cropX, cropY: crop.cropY });
           this.cropTarget._cropSource = source;
 
           this.canvas?.renderAll();
         }
       });
 
-      this.cropper.onCropCancel((crop) => {
+      this.cropper.on('cancel', (crop) => {
         this.cropTarget?.set({ ...crop, cropX: crop.cropX, cropY: crop.cropY });
 
+        this.canvas?.renderAll();
+      });
+
+      this.cropper.on('start', () => {
+        this.canvas?.discardActiveObject();
+        this.canvas?.renderAll();
+      });
+
+      this.cropper.on('end', () => {
+        this.cropTarget && this.canvas?.setActiveObject(this.cropTarget);
         this.canvas?.renderAll();
       });
     }
   }
 
-  dispose(canvas?: fabric.Canvas) {
+  public dispose(canvas?: fabric.Canvas) {
     this.canvas?.off('mouse:dblclick', this.crop);
     this.canvas = canvas;
 
     this.init();
   }
 
-  crop = () => {
+  public remove() {
+    this.canvas?.off('mouse:dblclick', this.crop);
+    this.cropper?.off();
+    this.cropper?.remove();
+  }
+
+  public crop = () => {
     const actice = this.canvas?.getActiveObject();
 
     if (!actice || !this.cropper || !isFabricImage(actice)) {
@@ -62,10 +77,14 @@ export class FabricCropListener {
 
     const object = actice.toObject();
 
-    this.cropper.crop(actice.getSrc(), object, actice._cropSource || object);
+    this.cropper.crop({ src: actice.getSrc(), cropData: object, sourceData: actice._cropSource || object });
   };
 
-  confirm() {}
+  public confirm() {
+    this.cropper?.confirm();
+  }
 
-  cancel() {}
+  public cancel() {
+    this.cropper?.cancel();
+  }
 }

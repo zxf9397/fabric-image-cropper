@@ -1,30 +1,19 @@
+import type { ISouceMovingHandlerDataReturns, ISouceMovingHandlerParam } from './data.d';
+
 import { IPoint, Point } from '../utils/point.class';
 
-import type { IControlCoords } from '../controls/data.d';
-import type { ICropData, ISourceData } from '../cropper/data.d';
-
-interface ISouceMovingHandlerDataReturns {
-  cropData: ICropData;
-  sourceData: ISourceData;
-}
-
-interface ISouceMovingHandlerParam extends ISouceMovingHandlerDataReturns {
-  pointer: Point;
-  cropCoords: IControlCoords;
-}
-
 export const sourceMovingHandler = (param: ISouceMovingHandlerParam): ISouceMovingHandlerDataReturns => {
-  const { pointer, cropData, cropCoords, sourceData } = param;
-  const scaledCropWidth = cropData.width * cropData.scaleX;
-  const scaledCropHeight = cropData.height * cropData.scaleY;
-  const scaledSourceWidth = sourceData.width * cropData.scaleX;
-  const scaledSourceHeight = sourceData.height * cropData.scaleY;
+  const { pointer, croppedData, croppedControlCoords, sourceData } = param;
+  const scaledCropWidth = croppedData.width * croppedData.scaleX;
+  const scaledCropHeight = croppedData.height * croppedData.scaleY;
+  const scaledSourceWidth = sourceData.width * croppedData.scaleX;
+  const scaledSourceHeight = sourceData.height * croppedData.scaleY;
 
   const rightBound = scaledCropWidth - scaledSourceWidth;
   const bottomBound = scaledCropHeight - scaledSourceHeight;
 
-  const toLeftTop = pointer.subtract(cropCoords.tl).rotate(-cropData.angle);
-  const toRightBottom = pointer.subtract(cropCoords.br).rotate(180 - cropData.angle);
+  const toLeftTop = pointer.subtract(croppedControlCoords.tl).rotate(-croppedData.angle);
+  const toRightBottom = pointer.subtract(croppedControlCoords.br).rotate(180 - croppedData.angle);
 
   const relativePositionIfSourceSideInner: Partial<Record<string, IPoint>> = {
     tl: { x: 0, y: 0 },
@@ -41,11 +30,11 @@ export const sourceMovingHandler = (param: ISouceMovingHandlerParam): ISouceMovi
   const hor = toLeftTop.x > 0 ? 'l' : toRightBottom.x > scaledSourceWidth ? 'r' : '';
 
   const relativePosition = relativePositionIfSourceSideInner[ver + hor];
-  const tl = relativePosition ? new Point(relativePosition).rotate(cropData.angle).add(cropCoords.tl) : pointer;
-  const crop = new Point(cropCoords.tl).subtract(tl).rotate(-cropData.angle);
+  const tl = relativePosition ? new Point(relativePosition).rotate(croppedData.angle).add(croppedControlCoords.tl) : pointer;
+  const crop = new Point(croppedControlCoords.tl).subtract(tl).rotate(-croppedData.angle);
 
   return {
-    cropData: { ...cropData, cropX: crop.x / cropData.scaleX, cropY: crop.y / cropData.scaleY },
+    croppedData: { ...croppedData, cropX: crop.x / croppedData.scaleX, cropY: crop.y / croppedData.scaleY },
     sourceData: { ...sourceData, left: tl.x, top: tl.y },
   };
 };

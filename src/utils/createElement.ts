@@ -1,18 +1,10 @@
-import { createElement } from '../utils/tools';
+import type { IElementParam } from '../data';
+import type { IControlType, ICornerControlType, IMiddleControlType } from '../controls/data';
 
-import type { IControlType, ICornerControlType, IMiddleControlType } from './data.d';
+import { setCSSProperties } from './tools';
+import { DEFAULT_CORNER } from '../const';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
-
-const data = {
-  width: 32,
-  height: 32,
-  lineWidth: 4,
-  strokeWidth: 2,
-  lineLength: 8,
-  fill: '#fff',
-  stroke: '#cccc',
-};
 
 function createCornerPath(d: string, stroke: string, strokeWidth: number) {
   const path = document.createElementNS(SVG_NS, 'path');
@@ -26,7 +18,7 @@ function createCornerPath(d: string, stroke: string, strokeWidth: number) {
 }
 
 function createCornerSVG() {
-  const { width, height, lineWidth, lineLength, strokeWidth, fill, stroke } = data;
+  const { width, height, lineWidth, lineLength, strokeWidth, fill, stroke } = DEFAULT_CORNER;
 
   const svg = document.createElementNS(SVG_NS, 'svg');
   svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
@@ -44,7 +36,25 @@ function createCornerSVG() {
   return { svg, strokePath, fillPath };
 }
 
-const controlClassMap: Record<IControlType, string> = {
+export const ScaleMapList: Readonly<string[]> = ['e', 'se', 's', 'sw', 'w', 'nw', 'n', 'ne', 'e'];
+
+export function createElement<T extends keyof HTMLElementTagNameMap>(tagName: T, param?: IElementParam<T>) {
+  const element = document.createElement(tagName);
+
+  if (param?.classList?.length) {
+    element.classList.add(...param.classList.filter((item) => !!item));
+  }
+
+  if (param?.className) {
+    element.classList.add(param.className);
+  }
+
+  param?.style && setCSSProperties(element, param.style);
+
+  return element;
+}
+
+const ControlClassMap: Record<IControlType, string> = {
   tl: 'ic-corner-ctrl',
   mt: 'ic-middle-ctrl',
   tr: 'ic-corner-ctrl',
@@ -55,11 +65,9 @@ const controlClassMap: Record<IControlType, string> = {
   ml: 'ic-middle-ctrl',
 };
 
-export const scaleMap: Readonly<string[]> = ['e', 'se', 's', 'sw', 'w', 'nw', 'n', 'ne', 'e'];
-
 export function createCornerCtrlEl(corner: ICornerControlType) {
   return () => {
-    const element = createElement('div', { className: controlClassMap[corner] });
+    const element = createElement('div', { className: ControlClassMap[corner] });
     const { svg } = createCornerSVG();
     element.appendChild(svg);
     return element;
@@ -68,6 +76,6 @@ export function createCornerCtrlEl(corner: ICornerControlType) {
 
 export function createMiddleCtrlEl(corner: IMiddleControlType) {
   return () => {
-    return createElement('div', { className: controlClassMap[corner] });
+    return createElement('div', { className: ControlClassMap[corner] });
   };
 }

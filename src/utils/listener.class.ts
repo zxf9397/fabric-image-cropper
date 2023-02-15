@@ -29,6 +29,6 @@ export class Listener<T extends Record<string, (...args: any) => void>> {
   public fire<K extends keyof T>(type: K, ...rest: Parameters<T[K]>) {
     const set = this.listener.get(type);
 
-    set && set.forEach((callback) => callback(rest));
+    set && set.forEach((callback) => callback(...(rest as Parameters<T[K]>[])));
   }
 }

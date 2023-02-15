@@ -1,4 +1,7 @@
-export const PiDivBy2 = Math.PI / 2;
+import type { Control } from '../components/control.class';
+
+type AngleType = 'degree' | 'radian';
+
 export const PiDivBy180 = Math.PI / 180;
 
 export const degree2Radian = (degree: number) => degree * PiDivBy180;
@@ -38,7 +41,10 @@ export const cosByDegree = (degree: number) => {
   }
 };
 
-type AngleType = 'degree' | 'radian';
+export function findCornerQuadrant(angle: number, control: Control) {
+  const cornerAngle = angle + Math.atan2(control.y, control.x) / (Math.PI / 180) + 360;
+  return Math.round((cornerAngle % 360) / 45);
+}
 
 export class Angle {
   private _degree = 0;

@@ -69,3 +69,8 @@
   border-radius: 10px;
   transform-origin: center center;
 }
+
+.ic-border {
+  position: absolute;
+  transform-origin: center center;
+}
