@@ -29,7 +29,7 @@ export function clamp(num: number, min: number, max: number) {
 /**
  * Get the intersection of target and source, and merge them into a new target.
  */
-export function pick<T, U>(target: T, source: U): AutoPick<T, U> {
+export function pick<T extends {}, U extends {}>(target: T, source: U): AutoPick<T, U> {
   return Object.fromEntries(
     Object.entries(target).map(([key, val]) => {
       const sourceVal = (source as any)[key];

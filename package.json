@@ -1,24 +1,22 @@
 {
   "name": "icropper",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Image cropper",
-  "files": [
-    "dist",
-    "lib"
-  ],
   "main": "./dist/icropper.umd.js",
-  "module": "./dist/icropper.es.js",
-  "types": "./lib/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/icropper.es.js",
-      "require": "./dist/icropper.umd.js"
+      "require": "./dist/icropper.umd.js",
+      "types": "./lib/index.d.ts"
     },
     "./style": {
       "import": "./dist/style.css",
       "require": "./dist/style.css"
     }
   },
+  "type": "module",
+  "types": "./lib/index.d.ts",
+  "module": "./dist/icropper.es.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build"
@@ -27,9 +25,19 @@
     "type": "git",
     "url": "git+https://github.com/zxf9397/image-cropper.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "files": [
+    "dist",
+    "lib"
+  ],
+  "keywords": [
+    "image",
+    "crop",
+    "cropper",
+    "html",
+    "typescript"
+  ],
+  "author": "Aufin Zhu",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/zxf9397/image-cropper/issues"
   },

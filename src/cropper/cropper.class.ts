@@ -37,6 +37,7 @@ export class ImageCropper {
 
   private startPoint?: Point;
 
+  private prepared = false;
   private cropping = false;
 
   private croppedData!: ICropData;
@@ -129,6 +130,19 @@ export class ImageCropper {
   public cancelable = true;
   public set scale(value: number) {
     this.cropRenderer.scale = this.sourceRenderer.scale = value;
+
+    if (this.cropping) {
+      const payload: IRenderFunctionParam = {
+        src: this.src,
+        angle: this.angle,
+        croppedData: this.croppedData,
+        croppedBackup: this.croppedBackup,
+        sourceData: this.sourceData,
+        sourceBackup: this.sourceBackup,
+      };
+      this.cropRenderer.render(payload);
+      this.sourceRenderer.render(payload);
+    }
   }
 
   private event?: { e: MouseEvent; action?: string; corner?: IControlType; target?: SourceRenderer | CropRenderer };
@@ -179,7 +193,7 @@ export class ImageCropper {
 
   private actionHandler = async (e: MouseEvent) => {
     const { action, corner } = this.event || {};
-    if (!action || !this.cropping) {
+    if (!action || !this.prepared) {
       return;
     }
     const { croppedData, croppedControlCoords, sourceData, sourceControlCoords } = this;
@@ -318,7 +332,8 @@ export class ImageCropper {
    * Start cropping
    */
   public async crop(data?: { src?: string; cropData?: ICropData; sourceData?: ISourceData }) {
-    this.cropping = false;
+    this.prepared = false;
+    this.cropping = true;
 
     this.setData(data?.src || this.src, data?.cropData || this.croppedData, data?.sourceData || this.sourceData);
 
@@ -328,7 +343,7 @@ export class ImageCropper {
 
     this.listener.fire('start');
 
-    this.cropping = true;
+    this.prepared = true;
   }
 
   /**
@@ -336,6 +351,7 @@ export class ImageCropper {
    */
   public confirm() {
     this.setCropperVisibility(false);
+    this.cropping = false;
 
     this.listener.fire('end', pick(DEFAULT_CROPPED_DATA, this.croppedData), pick(DEFAULT_SOURCE_DATA, this.sourceData));
     this.listener.fire('confirm', pick(DEFAULT_CROPPED_DATA, this.croppedData), pick(DEFAULT_SOURCE_DATA, this.sourceData));
@@ -346,6 +362,7 @@ export class ImageCropper {
    */
   public cancel() {
     this.setCropperVisibility(false);
+    this.cropping = false;
 
     this.listener.fire('end', pick(DEFAULT_CROPPED_DATA, this.croppedBackup), pick(DEFAULT_SOURCE_DATA, this.sourceBackup));
     this.listener.fire('cancel', pick(DEFAULT_CROPPED_DATA, this.croppedBackup), pick(DEFAULT_SOURCE_DATA, this.sourceBackup));
