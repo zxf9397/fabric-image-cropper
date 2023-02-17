@@ -70,7 +70,7 @@ export class SourceRenderer extends Renderer {
       transform: new CSSTransform().scaleX(croppedData.flipX ? -1 : 1).scaleY(croppedData.flipY ? -1 : 1).value,
     });
 
-    this.domScaleX = 1 / domScaleX;
-    this.domScaleY = 1 / domScaleY;
+    this.domScaleX = this.scale / domScaleX;
+    this.domScaleY = this.scale / domScaleY;
   }
 }

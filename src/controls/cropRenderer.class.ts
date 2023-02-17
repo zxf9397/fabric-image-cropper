@@ -8,7 +8,7 @@ import { CSSTransform } from '../utils/cssTransform.class';
 import { setCSSProperties } from '../utils/tools';
 
 export class CropRenderer extends Renderer {
-  protected controls = {
+  public controls = {
     tl: new Control({ x: -1, y: -1, angle: 0, createElement: createCornerCtrlEl('tl'), actionName: 'crop' }),
     tr: new Control({ x: 1, y: -1, angle: 90, createElement: createCornerCtrlEl('tr'), actionName: 'crop' }),
     br: new Control({ x: 1, y: 1, angle: 180, createElement: createCornerCtrlEl('br'), actionName: 'crop' }),
@@ -80,7 +80,22 @@ export class CropRenderer extends Renderer {
         .scaleY((croppedData.flipY ? -1 : 1) / cropScaleY).value,
     });
 
-    this.domScaleX = 1 / scaleX;
-    this.domScaleY = 1 / scaleY;
+    this.domScaleX = this.scale / scaleX;
+    this.domScaleY = this.scale / scaleY;
+
+    const w = croppedData.width * croppedData.scaleX;
+    const h = croppedData.height * croppedData.scaleY;
+
+    if (w < 40 * this.scale) {
+      [this.controls.mt, this.controls.mb].map((ctrl) => (ctrl.visible = false));
+    } else {
+      [this.controls.mt, this.controls.mb].map((ctrl) => (ctrl.visible = true));
+    }
+
+    if (h < 40 * this.scale) {
+      [this.controls.ml, this.controls.mr].map((ctrl) => (ctrl.visible = false));
+    } else {
+      [this.controls.ml, this.controls.mr].map((ctrl) => (ctrl.visible = true));
+    }
   }
 }

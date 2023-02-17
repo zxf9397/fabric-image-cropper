@@ -81,16 +81,15 @@ export class ImageCropper {
       }
     },
     'cropper:dblclick': (e: MouseEvent) => this.confirm(),
-    'cropper:mouseup': (e: MouseEvent) => {
-      // update cursor
-      this.activeCursorStyle.down = '';
-      setCSSProperties(this.container, { cursor: this.activeCursorStyle.down || this.activeCursorStyle.over });
-    },
     'document:mousemove': (e: MouseEvent) => this.actionHandler(e),
     'document:mouseup': (e: MouseEvent) => {
       this.event = { e };
       this.croppedTransform && (this.croppedData = { ...this.croppedTransform });
       this.sourceTransform && (this.sourceData = { ...this.sourceTransform });
+
+      // update cursor
+      this.activeCursorStyle.down = '';
+      setCSSProperties(this.container, { cursor: this.activeCursorStyle.down || this.activeCursorStyle.over });
     },
   };
 
@@ -128,6 +127,9 @@ export class ImageCropper {
   public borderWidth = DEFAULT_BORDER_WIDTH;
   public borderColor = DEFAULT_BORDER_COLOR;
   public cancelable = true;
+  public set scale(value: number) {
+    this.cropRenderer.scale = this.sourceRenderer.scale = value;
+  }
 
   private event?: { e: MouseEvent; action?: string; corner?: IControlType; target?: SourceRenderer | CropRenderer };
 
@@ -148,7 +150,6 @@ export class ImageCropper {
     this._element.addEventListener('mouseover', this.domListener['cropper:mouseover']);
     this._element.addEventListener('mousedown', this.domListener['cropper:mousedown']);
     this._element.addEventListener('dblclick', this.domListener['cropper:dblclick']);
-    this._element.addEventListener('mouseup', this.domListener['cropper:mouseup']);
     document.addEventListener('mousemove', this.domListener['document:mousemove']);
     document.addEventListener('mouseup', this.domListener['document:mouseup']);
   }
@@ -157,7 +158,6 @@ export class ImageCropper {
     this._element.removeEventListener('mouseover', this.domListener['cropper:mouseover']);
     this._element.removeEventListener('mousedown', this.domListener['cropper:mousedown']);
     this._element.removeEventListener('dblclick', this.domListener['cropper:dblclick']);
-    this._element.removeEventListener('mouseup', this.domListener['cropper:mouseup']);
     document.removeEventListener('mousemove', this.domListener['document:mousemove']);
     document.removeEventListener('mouseup', this.domListener['document:mouseup']);
   }

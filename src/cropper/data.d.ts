@@ -34,12 +34,12 @@ export interface CropInfo {
   src: string;
 }
 
-export interface ImageCropperOptions extends CropInfo {
-  visible: boolean;
-  containerOffsetX: number;
-  containerOffsetY: number;
-  borderWidth: number;
-  borderColor: CSS.Properties['color'];
+export interface ImageCropperOptions extends Partial<CropInfo> {
+  visible?: boolean;
+  containerOffsetX?: number;
+  containerOffsetY?: number;
+  borderWidth?: number;
+  borderColor?: CSS.Properties['color'];
 }
 
 export type CropStart = 'crop';

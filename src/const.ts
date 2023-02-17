@@ -5,6 +5,7 @@ export enum AttributesData {
   ActionName = 'data-action-name',
   ActionCursor = 'data-action-cursor',
   ActionCorner = 'data-action-corner',
+  CornerName = 'data-corner-name',
 }
 
 export enum ActionName {
@@ -18,6 +19,9 @@ export enum ActionName {
 
 export const DEFAULT_BORDER_WIDTH = 2;
 export const DEFAULT_BORDER_COLOR = 'tomato';
+
+export const DEFAULT_CONTROL_COLOR = '#fff';
+export const DEFAULT_ACTIVE_CONTROL_COLOR = 'tomato';
 
 export const DEFAULT_CROPPED_DATA: Required<ICropData> = {
   angle: 0,

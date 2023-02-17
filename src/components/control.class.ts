@@ -90,7 +90,9 @@ export class Control {
 
     if (!this.visible) {
       setCSSProperties(this._element, { display: 'none' });
+      return;
     }
+    setCSSProperties(this._element, { display: 'block' });
 
     this._element.setAttribute(AttributesData.ActionName, this.actionName);
 

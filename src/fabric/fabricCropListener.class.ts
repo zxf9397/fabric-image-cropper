@@ -1,6 +1,8 @@
 import { ImageCropper } from '../cropper/cropper.class';
 import { fabric } from 'fabric';
 
+import type { ImageCropperOptions } from '../cropper/data.d';
+
 import '../styles/style.css';
 
 function isFabricImage(object: fabric.Object): object is Required<fabric.Image> {
@@ -13,16 +15,15 @@ export class FabricCropListener {
 
   private cropTarget?: fabric.Image;
 
-  constructor(canvas: fabric.Canvas) {
+  constructor(canvas: fabric.Canvas, options?: ImageCropperOptions) {
     this.canvas = canvas;
 
-    this.init();
+    this.init(options);
   }
 
-  private init() {
+  private init(options?: ImageCropperOptions) {
     if (this.canvas) {
-      this.cropper = new ImageCropper(this.canvas.wrapperEl, { containerOffsetX: 2, containerOffsetY: 2, borderColor: 'purple' });
-      this.cropper.element.style.transform = 'translateX(100%)';
+      this.cropper = new ImageCropper(this.canvas.wrapperEl, options);
 
       this.canvas?.on('mouse:dblclick', this.crop);
 

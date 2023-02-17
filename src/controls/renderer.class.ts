@@ -10,6 +10,7 @@ import { findCornerQuadrant } from '../utils/angle.class';
 export class Renderer {
   public borderWidth = DEFAULT_BORDER_WIDTH;
   public borderColor = DEFAULT_BORDER_COLOR;
+  public scale = 1;
 
   public get element() {
     return this.elements.container;
@@ -90,7 +91,7 @@ export class Renderer {
 
   protected renderBefore(param: IRenderFunctionParam) {}
 
-  render = async (param: IRenderFunctionParam) => {
+  public render = async (param: IRenderFunctionParam) => {
     this.imageLoader.setImage(param.src);
     await this.imageLoader.getImage();
 
@@ -101,6 +102,7 @@ export class Renderer {
 
       control.scaleX = this.domScaleX;
       control.scaleY = this.domScaleY;
+      control.element?.setAttribute(AttributesData.CornerName, corner);
       control.element?.setAttribute(AttributesData.ActionCursor, control.cursorStyle);
       control.render();
     });
