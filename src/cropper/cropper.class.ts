@@ -353,8 +353,17 @@ export class ImageCropper {
     this.setCropperVisibility(false);
     this.cropping = false;
 
-    this.listener.fire('end', pick(DEFAULT_CROPPED_DATA, this.croppedData), pick(DEFAULT_SOURCE_DATA, this.sourceData));
-    this.listener.fire('confirm', pick(DEFAULT_CROPPED_DATA, this.croppedData), pick(DEFAULT_SOURCE_DATA, this.sourceData));
+    const newCropData = this.croppedData;
+    const newSourceData = this.sourceData;
+    if (newCropData.flipX) {
+      newCropData.cropX = newSourceData.width - newCropData.width - newCropData.cropX;
+    }
+    if (newCropData.flipY) {
+      newCropData.cropY = newSourceData.height - newCropData.height - newCropData.cropY;
+    }
+
+    this.listener.fire('end', pick(DEFAULT_CROPPED_DATA, newCropData), pick(DEFAULT_SOURCE_DATA, newSourceData));
+    this.listener.fire('confirm', pick(DEFAULT_CROPPED_DATA, newCropData), pick(DEFAULT_SOURCE_DATA, newSourceData));
   }
 
   /**

@@ -11,9 +11,16 @@ function isFabricImage(object: fabric.Object): object is Required<fabric.Image> 
 
 export class FabricCropListener {
   private canvas?: fabric.Canvas;
-  private cropper?: ImageCropper;
-
+  private cropper!: ImageCropper;
   private cropTarget?: fabric.Image;
+
+  public get on() {
+    return this.cropper.on.bind(this.cropper);
+  }
+
+  public get off() {
+    return this.cropper.off.bind(this.cropper);
+  }
 
   constructor(canvas: fabric.Canvas, options?: ImageCropperOptions) {
     this.canvas = canvas;

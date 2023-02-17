@@ -1,4 +1,5 @@
 import { fabric } from 'fabric';
+import { ImageCropper } from '../src';
 import { FabricCropListener } from '../src/fabric/fabricCropListener.class';
 
 const cropButton = document.querySelector('#crop-btn') as HTMLButtonElement;
@@ -34,9 +35,30 @@ function fabricImageFromURL(url: string, imgOptions?: fabric.IImageOptions) {
     flipY: true,
   })) as Required<fabric.Image>;
 
-  fabricCanvas.add(image).renderAll();
+  const image2 = (await fabricImageFromURL('/gallery/pic.png', {
+    left: 100,
+    top: 100,
+    scaleX: -0.6,
+    scaleY: -0.5,
+    angle: 0,
+    flipX: true,
+    flipY: true,
+    opacity: 0.5,
+  })) as Required<fabric.Image>;
 
-  const listener = new FabricCropListener(fabricCanvas, { containerOffsetX: 2, containerOffsetY: 2 });
+  fabricCanvas.add(image2, image).renderAll();
+
+  const listener = new FabricCropListener(fabricCanvas, { containerOffsetX: 604, containerOffsetY: 2 });
+
+  listener.on('cropping', (crop, source) => {
+    image2.set(ImageCropper.getSource(crop, source));
+    fabricCanvas.renderAll();
+  });
+
+  listener.on('start', () => {
+    image2.set(ImageCropper.getSource(image, image._cropSource || image));
+    fabricCanvas.renderAll();
+  });
 
   cropButton.addEventListener('click', listener.crop.bind(listener));
   confirmButton.addEventListener('click', listener.confirm.bind(listener));

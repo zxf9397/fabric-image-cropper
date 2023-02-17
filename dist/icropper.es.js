@@ -122,7 +122,7 @@ class l {
   }
 }
 const M = new l(0, 0);
-function v(i, e) {
+function w(i, e) {
   Object.entries(e).forEach(([t, s]) => i.style.setProperty(t, s));
 }
 function V(i, e, t) {
@@ -170,7 +170,7 @@ const ae = ["e", "se", "s", "sw", "w", "nw", "n", "ne", "e"];
 function f(i, e) {
   var s;
   const t = document.createElement(i);
-  return (s = e == null ? void 0 : e.classList) != null && s.length && t.classList.add(...e.classList.filter((r) => !!r)), e != null && e.className && t.classList.add(e.className), e != null && e.style && v(t, e.style), t;
+  return (s = e == null ? void 0 : e.classList) != null && s.length && t.classList.add(...e.classList.filter((r) => !!r)), e != null && e.className && t.classList.add(e.className), e != null && e.style && w(t, e.style), t;
 }
 const K = {
   tl: "ic-corner-ctrl",
@@ -182,13 +182,13 @@ const K = {
   bl: "ic-corner-ctrl",
   ml: "ic-middle-ctrl"
 };
-function E(i) {
+function Y(i) {
   return () => {
     const e = f("div", { className: K[i] }), { svg: t } = ce();
     return e.appendChild(t), e;
   };
 }
-function Y(i) {
+function E(i) {
   return () => f("div", { className: K[i] });
 }
 function Q(i, e) {
@@ -238,7 +238,7 @@ class R {
     return this;
   }
   render() {
-    Object.assign(this, this.actionHandler()), this.element.setAttribute(x.BorderName, this.borderName), v(this.element, this.getRenderStyle());
+    Object.assign(this, this.actionHandler()), this.element.setAttribute(x.BorderName, this.borderName), w(this.element, this.getRenderStyle());
   }
 }
 class he {
@@ -332,7 +332,7 @@ class y {
     var t;
     (t = this._element) == null || t.remove();
     const e = f("div");
-    return this.visible || v(e, { display: "none" }), e;
+    return this.visible || w(e, { display: "none" }), e;
   }
   getRenderStyle() {
     return {
@@ -344,24 +344,24 @@ class y {
   render() {
     if (this._element) {
       if (!this.visible) {
-        v(this._element, { display: "none" });
+        w(this._element, { display: "none" });
         return;
       }
-      v(this._element, { display: "block" }), this._element.setAttribute(x.ActionName, this.actionName), v(this._element, this.getRenderStyle());
+      w(this._element, { display: "block" }), this._element.setAttribute(x.ActionName, this.actionName), w(this._element, this.getRenderStyle());
     }
   }
 }
 class le extends ee {
   constructor() {
     super(), this.controls = {
-      tl: new y({ x: -1, y: -1, angle: 0, createElement: E("tl"), actionName: "crop" }),
-      tr: new y({ x: 1, y: -1, angle: 90, createElement: E("tr"), actionName: "crop" }),
-      br: new y({ x: 1, y: 1, angle: 180, createElement: E("br"), actionName: "crop" }),
-      bl: new y({ x: -1, y: 1, angle: 270, createElement: E("bl"), actionName: "crop" }),
-      ml: new y({ x: -1, y: 0, angle: 90, createElement: Y("ml"), actionName: "crop" }),
-      mr: new y({ x: 1, y: 0, angle: 90, createElement: Y("mr"), actionName: "crop" }),
-      mt: new y({ x: 0, y: -1, angle: 0, createElement: Y("mt"), actionName: "crop" }),
-      mb: new y({ x: 0, y: 1, angle: 0, createElement: Y("mb"), actionName: "crop" })
+      tl: new y({ x: -1, y: -1, angle: 0, createElement: Y("tl"), actionName: "crop" }),
+      tr: new y({ x: 1, y: -1, angle: 90, createElement: Y("tr"), actionName: "crop" }),
+      br: new y({ x: 1, y: 1, angle: 180, createElement: Y("br"), actionName: "crop" }),
+      bl: new y({ x: -1, y: 1, angle: 270, createElement: Y("bl"), actionName: "crop" }),
+      ml: new y({ x: -1, y: 0, angle: 90, createElement: E("ml"), actionName: "crop" }),
+      mr: new y({ x: 1, y: 0, angle: 90, createElement: E("mr"), actionName: "crop" }),
+      mt: new y({ x: 0, y: -1, angle: 0, createElement: E("mt"), actionName: "crop" }),
+      mb: new y({ x: 0, y: 1, angle: 0, createElement: E("mb"), actionName: "crop" })
     }, this.addBordersAndControls();
   }
   createElement() {
@@ -385,7 +385,7 @@ class le extends ee {
         t.top
       ]).value
     };
-    v(this.elements.lower, a), v(this.elements.upper, a), v(this.elements.image, {
+    w(this.elements.lower, a), w(this.elements.upper, a), w(this.elements.image, {
       width: `${s.width}px`,
       height: `${s.height}px`,
       transform: new A().translate(
@@ -400,14 +400,14 @@ class le extends ee {
 class de extends ee {
   constructor(e) {
     super(e), this.controls = {
-      tl: new y({ x: -1, y: -1, angle: 0, createElement: E("tl"), actionName: "scale" }),
-      tr: new y({ x: 1, y: -1, angle: 90, createElement: E("tr"), actionName: "scale" }),
-      br: new y({ x: 1, y: 1, angle: 180, createElement: E("br"), actionName: "scale" }),
-      bl: new y({ x: -1, y: 1, angle: 270, createElement: E("bl"), actionName: "scale" }),
-      ml: new y({ visible: !1, x: -1, y: 0, angle: 90, createElement: Y("ml"), actionName: "scale" }),
-      mr: new y({ visible: !1, x: 1, y: 0, angle: 90, createElement: Y("mr"), actionName: "scale" }),
-      mt: new y({ visible: !1, x: 0, y: -1, angle: 0, createElement: Y("mt"), actionName: "scale" }),
-      mb: new y({ visible: !1, x: 0, y: 1, angle: 0, createElement: Y("mb"), actionName: "scale" })
+      tl: new y({ x: -1, y: -1, angle: 0, createElement: Y("tl"), actionName: "scale" }),
+      tr: new y({ x: 1, y: -1, angle: 90, createElement: Y("tr"), actionName: "scale" }),
+      br: new y({ x: 1, y: 1, angle: 180, createElement: Y("br"), actionName: "scale" }),
+      bl: new y({ x: -1, y: 1, angle: 270, createElement: Y("bl"), actionName: "scale" }),
+      ml: new y({ visible: !1, x: -1, y: 0, angle: 90, createElement: E("ml"), actionName: "scale" }),
+      mr: new y({ visible: !1, x: 1, y: 0, angle: 90, createElement: E("mr"), actionName: "scale" }),
+      mt: new y({ visible: !1, x: 0, y: -1, angle: 0, createElement: E("mt"), actionName: "scale" }),
+      mb: new y({ visible: !1, x: 0, y: 1, angle: 0, createElement: E("mb"), actionName: "scale" })
     }, this.addBordersAndControls();
   }
   createElement() {
@@ -431,7 +431,7 @@ class de extends ee {
         s.top
       ]).value
     };
-    v(this.elements.lower, c), v(this.elements.upper, c), v(this.elements.image, {
+    w(this.elements.lower, c), w(this.elements.upper, c), w(this.elements.image, {
       transform: new A().scaleX(t.flipX ? -1 : 1).scaleY(t.flipY ? -1 : 1).value
     }), this.domScaleX = this.scale / o, this.domScaleY = this.scale / n;
   }
@@ -449,7 +449,7 @@ function pe(i) {
     mr: () => ({ x: 0, y: -(g = t.height * t.scaleY) / 2 }),
     mt: () => ({ x: -(m = t.width * t.scaleX) / 2, y: -g }),
     mb: () => ({ x: -(m = t.width * t.scaleX) / 2, y: 0 })
-  }, b = new l(X[n]()).rotate(c).add(h), w = b.subtract(o.tl).rotate(-c);
+  }, b = new l(X[n]()).rotate(c).add(h), v = b.subtract(o.tl).rotate(-c);
   return {
     croppedData: {
       ...t,
@@ -457,8 +457,8 @@ function pe(i) {
       top: b.y,
       width: m / t.scaleX,
       height: g / t.scaleY,
-      cropX: w.x / t.scaleX,
-      cropY: w.y / t.scaleY
+      cropX: v.x / t.scaleX,
+      cropY: v.y / t.scaleY
     },
     sourceData: r
   };
@@ -473,23 +473,23 @@ const me = (i) => {
     t: { x: p.x, y: 0 },
     r: { x: d, y: p.y },
     b: { x: p.x, y: a }
-  }, g = p.y > 0 ? "t" : u.y > h ? "b" : "", X = p.x > 0 ? "l" : u.x > c ? "r" : "", b = m[g + X], w = b ? new l(b).rotate(t.angle).add(s.tl) : e, C = new l(s.tl).subtract(w).rotate(-t.angle);
+  }, g = p.y > 0 ? "t" : u.y > h ? "b" : "", X = p.x > 0 ? "l" : u.x > c ? "r" : "", b = m[g + X], v = b ? new l(b).rotate(t.angle).add(s.tl) : e, C = new l(s.tl).subtract(v).rotate(-t.angle);
   return {
     croppedData: { ...t, cropX: C.x / t.scaleX, cropY: C.y / t.scaleY },
-    sourceData: { ...r, left: w.x, top: w.y }
+    sourceData: { ...r, left: v.x, top: v.y }
   };
 };
 var te = /* @__PURE__ */ ((i) => (i[i.tl = 0] = "tl", i[i.tr = 0] = "tr", i[i.br = -90] = "br", i[i.bl = -90] = "bl", i[i.ml = 90] = "ml", i[i.mr = 90] = "mr", i[i.mt = 0] = "mt", i[i.mb = 0] = "mb", i))(te || {});
 function ue(i) {
-  const { pointer: e, sourceControlCoords: t, croppedData: s, sourceData: r, croppedControlCoords: o, corner: n } = i, c = s.angle, h = t[B[n]], d = r.width * s.scaleX, a = r.height * s.scaleY, p = new l(t[B[n]]).subtract(t[n]).rotate(-c), u = Math.asin(a * Math.sign(p.x) / p.distanceFrom()) / (Math.PI / 180) + te[n], m = p.rotate(-u), g = e.subtract(h).rotate(-c - u), X = new l(o[n]).subtract(h).rotate(-c), b = Math.max(Math.abs(g.x) / Math.abs(m.x), Math.abs(X.x) / d, Math.abs(X.y) / a), w = d * b, C = a * b, N = {
-    tl: () => ({ x: -w, y: -C }),
+  const { pointer: e, sourceControlCoords: t, croppedData: s, sourceData: r, croppedControlCoords: o, corner: n } = i, c = s.angle, h = t[B[n]], d = r.width * s.scaleX, a = r.height * s.scaleY, p = new l(t[B[n]]).subtract(t[n]).rotate(-c), u = Math.asin(a * Math.sign(p.x) / p.distanceFrom()) / (Math.PI / 180) + te[n], m = p.rotate(-u), g = e.subtract(h).rotate(-c - u), X = new l(o[n]).subtract(h).rotate(-c), b = Math.max(Math.abs(g.x) / Math.abs(m.x), Math.abs(X.x) / d, Math.abs(X.y) / a), v = d * b, C = a * b, N = {
+    tl: () => ({ x: -v, y: -C }),
     br: () => ({ x: 0, y: 0 }),
     tr: () => ({ x: 0, y: -C }),
-    bl: () => ({ x: -w, y: 0 }),
-    ml: () => ({ x: -w, y: -C / 2 }),
+    bl: () => ({ x: -v, y: 0 }),
+    ml: () => ({ x: -v, y: -C / 2 }),
     mr: () => ({ x: 0, y: -C / 2 }),
-    mt: () => ({ x: -w / 2, y: -C }),
-    mb: () => ({ x: -w / 2, y: 0 })
+    mt: () => ({ x: -v / 2, y: -C }),
+    mb: () => ({ x: -v / 2, y: 0 })
   }[n](), $ = new l(N).rotate(c).add(h), H = $.subtract(o.tl).rotate(-c).flipX().flipY(), I = s.scaleX * b, F = s.scaleY * b;
   return {
     croppedData: {
@@ -533,18 +533,18 @@ class se {
     this.container = e, this.listener = new ge(), this.sourceRenderer = new de(), this.cropRenderer = new le(), this.activeCursorStyle = {}, this.prepared = !1, this.cropping = !1, this.src = "", this.domListener = {
       "cropper:mouseover": (s) => {
         var r;
-        s.stopPropagation(), this.activeCursorStyle.over = ((r = s.target) == null ? void 0 : r.getAttribute(x.ActionCursor)) || "", v(this.container, { cursor: this.activeCursorStyle.down || this.activeCursorStyle.over });
+        s.stopPropagation(), this.activeCursorStyle.over = ((r = s.target) == null ? void 0 : r.getAttribute(x.ActionCursor)) || "", w(this.container, { cursor: this.activeCursorStyle.down || this.activeCursorStyle.over });
       },
       "cropper:mousedown": (s) => {
         var o, n;
-        s.stopPropagation(), this.activeCursorStyle.down = ((o = s.target) == null ? void 0 : o.getAttribute(x.ActionCursor)) || "", v(this.container, { cursor: this.activeCursorStyle.down });
+        s.stopPropagation(), this.activeCursorStyle.down = ((o = s.target) == null ? void 0 : o.getAttribute(x.ActionCursor)) || "", w(this.container, { cursor: this.activeCursorStyle.down });
         const r = (n = s.target) == null ? void 0 : n.getAttribute(x.ActionName);
         r && this.eventCenter[r] ? (this.eventCenter[r](s), this.setCoords()) : this.cancel();
       },
       "cropper:dblclick": (s) => this.confirm(),
       "document:mousemove": (s) => this.actionHandler(s),
       "document:mouseup": (s) => {
-        this.event = { e: s }, this.croppedTransform && (this.croppedData = { ...this.croppedTransform }), this.sourceTransform && (this.sourceData = { ...this.sourceTransform }), this.activeCursorStyle.down = "", v(this.container, { cursor: this.activeCursorStyle.down || this.activeCursorStyle.over });
+        this.event = { e: s }, this.croppedTransform && (this.croppedData = { ...this.croppedTransform }), this.sourceTransform && (this.sourceData = { ...this.sourceTransform }), this.activeCursorStyle.down = "", w(this.container, { cursor: this.activeCursorStyle.down || this.activeCursorStyle.over });
       }
     }, this.eventCenter = {
       move: (s) => {
@@ -575,7 +575,7 @@ class se {
       cropping: () => {
       }
     }, this.containerOffsetX = 0, this.containerOffsetY = 0, this.borderWidth = T, this.borderColor = _, this.cancelable = !0, this.actionHandler = async (s) => {
-      var b, w;
+      var b, v;
       const { action: r, corner: o } = this.event || {};
       if (!r || !this.prepared)
         return;
@@ -584,7 +584,7 @@ class se {
       if (r === L.Moving) {
         const C = new l(
           h.left + (a.x - (((b = this.startPoint) == null ? void 0 : b.x) || a.x)),
-          h.top + (a.y - (((w = this.startPoint) == null ? void 0 : w.y) || a.y))
+          h.top + (a.y - (((v = this.startPoint) == null ? void 0 : v.y) || a.y))
         ), N = me({ pointer: C, croppedData: n, croppedControlCoords: c, sourceData: h });
         p = N.croppedData, u = N.sourceData;
       } else if (r === L.Cropping && o)
@@ -660,7 +660,7 @@ class se {
     });
   }
   setCropperVisibility(e) {
-    v(this._element, { display: this.cancelable ? e ? "block" : "none" : "block" });
+    w(this._element, { display: this.cancelable ? e ? "block" : "none" : "block" });
   }
   setData(e, t, s) {
     this.src = e, this.croppedBackup = D(S, t), this.sourceBackup = D(k, s), this.croppedData = D(S, t), this.sourceData = D(U, s), this.angle = new ne(this.croppedData.angle);
@@ -705,7 +705,9 @@ class se {
    * Confirm cropping
    */
   confirm() {
-    this.setCropperVisibility(!1), this.cropping = !1, this.listener.fire("end", D(S, this.croppedData), D(k, this.sourceData)), this.listener.fire("confirm", D(S, this.croppedData), D(k, this.sourceData));
+    this.setCropperVisibility(!1), this.cropping = !1;
+    const e = this.croppedData, t = this.sourceData;
+    e.flipX && (e.cropX = t.width - e.width - e.cropX), e.flipY && (e.cropY = t.height - e.height - e.cropY), this.listener.fire("end", D(S, e), D(k, t)), this.listener.fire("confirm", D(S, e), D(k, t));
   }
   /**
    * Cancel cropping
@@ -728,6 +730,12 @@ class be {
       const r = s.toObject();
       this.cropper.crop({ src: s.getSrc(), cropData: r, sourceData: s._cropSource || r });
     }, this.canvas = e, this.init(t);
+  }
+  get on() {
+    return this.cropper.on.bind(this.cropper);
+  }
+  get off() {
+    return this.cropper.off.bind(this.cropper);
   }
   init(e) {
     var t;
