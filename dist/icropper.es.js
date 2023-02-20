@@ -544,7 +544,7 @@ class se {
       "cropper:dblclick": (s) => this.confirm(),
       "document:mousemove": (s) => this.actionHandler(s),
       "document:mouseup": (s) => {
-        this.event = { e: s }, this.croppedTransform && (this.croppedData = { ...this.croppedTransform }), this.sourceTransform && (this.sourceData = { ...this.sourceTransform }), this.activeCursorStyle.down = "", w(this.container, { cursor: this.activeCursorStyle.down || this.activeCursorStyle.over });
+        this.event = { e: s }, this.croppedTransform && (this.croppedData = { ...this.croppedTransform }, delete this.croppedTransform), this.sourceTransform && (this.sourceData = { ...this.sourceTransform }, delete this.sourceTransform), this.activeCursorStyle.down = "", w(this.container, { cursor: this.activeCursorStyle.down || this.activeCursorStyle.over });
       }
     }, this.eventCenter = {
       move: (s) => {
@@ -705,15 +705,14 @@ class se {
    * Confirm cropping
    */
   confirm() {
-    this.setCropperVisibility(!1), this.cropping = !1;
     const e = this.croppedData, t = this.sourceData;
-    e.flipX && (e.cropX = t.width - e.width - e.cropX), e.flipY && (e.cropY = t.height - e.height - e.cropY), this.listener.fire("end", D(S, e), D(k, t)), this.listener.fire("confirm", D(S, e), D(k, t));
+    e.flipX && (e.cropX = t.width - e.width - e.cropX), e.flipY && (e.cropY = t.height - e.height - e.cropY), this.listener.fire("confirm", D(S, e), D(k, t)), this.listener.fire("end", D(S, e), D(k, t)), this.setCropperVisibility(!1), this.cropping = !1;
   }
   /**
    * Cancel cropping
    */
   cancel() {
-    this.setCropperVisibility(!1), this.cropping = !1, this.listener.fire("end", D(S, this.croppedBackup), D(k, this.sourceBackup)), this.listener.fire("cancel", D(S, this.croppedBackup), D(k, this.sourceBackup));
+    this.listener.fire("cancel", D(S, this.croppedBackup), D(k, this.sourceBackup)), this.listener.fire("end", D(S, this.croppedBackup), D(k, this.sourceBackup)), this.setCropperVisibility(!1), this.cropping = !1;
   }
 }
 function fe(i) {

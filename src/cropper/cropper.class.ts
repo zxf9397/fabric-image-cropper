@@ -85,8 +85,16 @@ export class ImageCropper {
     'document:mousemove': (e: MouseEvent) => this.actionHandler(e),
     'document:mouseup': (e: MouseEvent) => {
       this.event = { e };
-      this.croppedTransform && (this.croppedData = { ...this.croppedTransform });
-      this.sourceTransform && (this.sourceData = { ...this.sourceTransform });
+
+      if (this.croppedTransform) {
+        this.croppedData = { ...this.croppedTransform };
+        delete this.croppedTransform;
+      }
+
+      if (this.sourceTransform) {
+        this.sourceData = { ...this.sourceTransform };
+        delete this.sourceTransform;
+      }
 
       // update cursor
       this.activeCursorStyle.down = '';
@@ -350,9 +358,6 @@ export class ImageCropper {
    * Confirm cropping
    */
   public confirm() {
-    this.setCropperVisibility(false);
-    this.cropping = false;
-
     const newCropData = this.croppedData;
     const newSourceData = this.sourceData;
     if (newCropData.flipX) {
@@ -362,18 +367,21 @@ export class ImageCropper {
       newCropData.cropY = newSourceData.height - newCropData.height - newCropData.cropY;
     }
 
-    this.listener.fire('end', pick(DEFAULT_CROPPED_DATA, newCropData), pick(DEFAULT_SOURCE_DATA, newSourceData));
     this.listener.fire('confirm', pick(DEFAULT_CROPPED_DATA, newCropData), pick(DEFAULT_SOURCE_DATA, newSourceData));
+    this.listener.fire('end', pick(DEFAULT_CROPPED_DATA, newCropData), pick(DEFAULT_SOURCE_DATA, newSourceData));
+
+    this.setCropperVisibility(false);
+    this.cropping = false;
   }
 
   /**
    * Cancel cropping
    */
   public cancel() {
+    this.listener.fire('cancel', pick(DEFAULT_CROPPED_DATA, this.croppedBackup), pick(DEFAULT_SOURCE_DATA, this.sourceBackup));
+    this.listener.fire('end', pick(DEFAULT_CROPPED_DATA, this.croppedBackup), pick(DEFAULT_SOURCE_DATA, this.sourceBackup));
+
     this.setCropperVisibility(false);
     this.cropping = false;
-
-    this.listener.fire('end', pick(DEFAULT_CROPPED_DATA, this.croppedBackup), pick(DEFAULT_SOURCE_DATA, this.sourceBackup));
-    this.listener.fire('cancel', pick(DEFAULT_CROPPED_DATA, this.croppedBackup), pick(DEFAULT_SOURCE_DATA, this.sourceBackup));
   }
 }
