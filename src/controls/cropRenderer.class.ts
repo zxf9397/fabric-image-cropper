@@ -74,7 +74,7 @@ export class CropRenderer extends Renderer {
       transform: new CSSTransform()
         .translate(
           -((croppedData.cropX - (croppedData.flipX ? sourceData.width : 0)) / cropScaleX),
-          -((croppedData.cropY - (croppedData.flipY ? sourceData.height : 0)) / cropScaleY)
+          -((croppedData.cropY - (croppedData.flipY ? sourceData.height : 0)) / cropScaleY),
         )
         .scaleX((croppedData.flipX ? -1 : 1) / cropScaleX)
         .scaleY((croppedData.flipY ? -1 : 1) / cropScaleY).value,

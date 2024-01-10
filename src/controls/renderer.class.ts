@@ -26,22 +26,42 @@ export class Renderer {
   protected borders = {
     mt: new Border({
       y: -1,
-      actionHandler: () => ({ scaleY: this.domScaleY, width: '100%', height: `${this.borderWidth}px`, color: this.borderColor }),
+      actionHandler: () => ({
+        scaleY: this.domScaleY,
+        width: '100%',
+        height: `${this.borderWidth}px`,
+        color: this.borderColor,
+      }),
       borderName: 'top',
     }),
     mr: new Border({
       x: 1,
-      actionHandler: () => ({ scaleX: this.domScaleX, width: `${this.borderWidth}px`, height: '100%', color: this.borderColor }),
+      actionHandler: () => ({
+        scaleX: this.domScaleX,
+        width: `${this.borderWidth}px`,
+        height: '100%',
+        color: this.borderColor,
+      }),
       borderName: 'right',
     }),
     mb: new Border({
       y: 1,
-      actionHandler: () => ({ scaleY: this.domScaleY, width: '100%', height: `${this.borderWidth}px`, color: this.borderColor }),
+      actionHandler: () => ({
+        scaleY: this.domScaleY,
+        width: '100%',
+        height: `${this.borderWidth}px`,
+        color: this.borderColor,
+      }),
       borderName: 'bottom',
     }),
     ml: new Border({
       x: -1,
-      actionHandler: () => ({ scaleX: this.domScaleX, width: `${this.borderWidth}px`, height: '100%', color: this.borderColor }),
+      actionHandler: () => ({
+        scaleX: this.domScaleX,
+        width: `${this.borderWidth}px`,
+        height: '100%',
+        color: this.borderColor,
+      }),
       borderName: 'left',
     }),
   };

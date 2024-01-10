@@ -13,10 +13,38 @@ export class SourceRenderer extends Renderer {
     tr: new Control({ x: 1, y: -1, angle: 90, createElement: createCornerCtrlEl('tr'), actionName: 'scale' }),
     br: new Control({ x: 1, y: 1, angle: 180, createElement: createCornerCtrlEl('br'), actionName: 'scale' }),
     bl: new Control({ x: -1, y: 1, angle: 270, createElement: createCornerCtrlEl('bl'), actionName: 'scale' }),
-    ml: new Control({ visible: false, x: -1, y: 0, angle: 90, createElement: createMiddleCtrlEl('ml'), actionName: 'scale' }),
-    mr: new Control({ visible: false, x: 1, y: 0, angle: 90, createElement: createMiddleCtrlEl('mr'), actionName: 'scale' }),
-    mt: new Control({ visible: false, x: 0, y: -1, angle: 0, createElement: createMiddleCtrlEl('mt'), actionName: 'scale' }),
-    mb: new Control({ visible: false, x: 0, y: 1, angle: 0, createElement: createMiddleCtrlEl('mb'), actionName: 'scale' }),
+    ml: new Control({
+      visible: false,
+      x: -1,
+      y: 0,
+      angle: 90,
+      createElement: createMiddleCtrlEl('ml'),
+      actionName: 'scale',
+    }),
+    mr: new Control({
+      visible: false,
+      x: 1,
+      y: 0,
+      angle: 90,
+      createElement: createMiddleCtrlEl('mr'),
+      actionName: 'scale',
+    }),
+    mt: new Control({
+      visible: false,
+      x: 0,
+      y: -1,
+      angle: 0,
+      createElement: createMiddleCtrlEl('mt'),
+      actionName: 'scale',
+    }),
+    mb: new Control({
+      visible: false,
+      x: 0,
+      y: 1,
+      angle: 0,
+      createElement: createMiddleCtrlEl('mb'),
+      actionName: 'scale',
+    }),
   };
 
   constructor(options?: Partial<SourceRenderer>) {

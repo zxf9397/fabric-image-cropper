@@ -1,4 +1,12 @@
-import type { CSSCursor, IControlCoords, ICropData, IListener, ImageCropperOptions, ISourceData, ISourceTransform } from './data.d';
+import type {
+  CSSCursor,
+  IControlCoords,
+  ICropData,
+  IListener,
+  ImageCropperOptions,
+  ISourceData,
+  ISourceTransform,
+} from './data.d';
 import type { IControlType, IRenderFunctionParam } from '../controls/data.d';
 
 import {
@@ -61,7 +69,8 @@ export class ImageCropper {
       e.stopPropagation();
 
       // update cursor
-      this.activeCursorStyle.over = (e.target as HTMLElement | undefined)?.getAttribute(AttributesData.ActionCursor) || '';
+      this.activeCursorStyle.over =
+        (e.target as HTMLElement | undefined)?.getAttribute(AttributesData.ActionCursor) || '';
       setCSSProperties(this.container, { cursor: this.activeCursorStyle.down || this.activeCursorStyle.over });
     },
     'cropper:mousedown': (e: MouseEvent) => {
@@ -72,7 +81,9 @@ export class ImageCropper {
       setCSSProperties(this.container, { cursor: this.activeCursorStyle.down });
 
       // event center
-      const actionName = (e.target as HTMLElement | undefined)?.getAttribute(AttributesData.ActionName) as ActionName | null;
+      const actionName = (e.target as HTMLElement | undefined)?.getAttribute(
+        AttributesData.ActionName,
+      ) as ActionName | null;
 
       if (actionName && this.eventCenter[actionName]) {
         this.eventCenter[actionName](e);
@@ -155,7 +166,10 @@ export class ImageCropper {
 
   private event?: { e: MouseEvent; action?: string; corner?: IControlType; target?: SourceRenderer | CropRenderer };
 
-  constructor(private container: HTMLElement, options?: Partial<ImageCropperOptions>) {
+  constructor(
+    private container: HTMLElement,
+    options?: Partial<ImageCropperOptions>,
+  ) {
     Object.assign(this, options);
 
     this.cropRenderer.borderWidth = this.sourceRenderer.borderWidth = this.borderWidth || DEFAULT_BORDER_WIDTH;
@@ -214,17 +228,31 @@ export class ImageCropper {
     if (action === ActionName.Moving) {
       const point = new Point(
         sourceData.left + (pointer.x - (this.startPoint?.x || pointer.x)),
-        sourceData.top + (pointer.y - (this.startPoint?.y || pointer.y))
+        sourceData.top + (pointer.y - (this.startPoint?.y || pointer.y)),
       );
 
       const data = sourceMovingHandler({ pointer: point, croppedData, croppedControlCoords, sourceData });
       croppedTransform = data.croppedData;
       sourceTransform = data.sourceData;
     } else if (action === ActionName.Cropping && corner) {
-      const data = cropScalingHandler({ pointer, croppedData, croppedControlCoords, sourceData, sourceControlCoords, corner });
+      const data = cropScalingHandler({
+        pointer,
+        croppedData,
+        croppedControlCoords,
+        sourceData,
+        sourceControlCoords,
+        corner,
+      });
       croppedTransform = data.croppedData;
     } else if (action === ActionName.Scaling && corner) {
-      const data = sourceScalingHandler({ pointer, croppedData, croppedControlCoords, sourceData, sourceControlCoords, corner });
+      const data = sourceScalingHandler({
+        pointer,
+        croppedData,
+        croppedControlCoords,
+        sourceData,
+        sourceControlCoords,
+        corner,
+      });
       croppedTransform = data.croppedData;
       sourceTransform = data.sourceData;
     }
@@ -257,7 +285,9 @@ export class ImageCropper {
   };
 
   private createElement() {
-    const { borderLeftWidth, borderTopWidth, border, width, height, position } = window.getComputedStyle(this.container);
+    const { borderLeftWidth, borderTopWidth, border, width, height, position } = window.getComputedStyle(
+      this.container,
+    );
 
     return createElement('div', {
       classList: ['ic-container'],
@@ -295,7 +325,9 @@ export class ImageCropper {
     this.croppedData.cropX = flipX ? this.sourceData.width - this.croppedData.width - cropX : cropX;
     this.croppedData.cropY = flipY ? this.sourceData.height - this.croppedData.height - cropY : cropY;
 
-    const sourcePosition = new Point(-this.croppedData.cropX * scaleX, -this.croppedData.cropY * scaleY).rotate(angle).add({ x: left, y: top });
+    const sourcePosition = new Point(-this.croppedData.cropX * scaleX, -this.croppedData.cropY * scaleY)
+      .rotate(angle)
+      .add({ x: left, y: top });
     this.sourceData.left = sourcePosition.x;
     this.sourceData.top = sourcePosition.y;
   }
@@ -378,8 +410,16 @@ export class ImageCropper {
    * Cancel cropping
    */
   public cancel() {
-    this.listener.fire('cancel', pick(DEFAULT_CROPPED_DATA, this.croppedBackup), pick(DEFAULT_SOURCE_DATA, this.sourceBackup));
-    this.listener.fire('end', pick(DEFAULT_CROPPED_DATA, this.croppedBackup), pick(DEFAULT_SOURCE_DATA, this.sourceBackup));
+    this.listener.fire(
+      'cancel',
+      pick(DEFAULT_CROPPED_DATA, this.croppedBackup),
+      pick(DEFAULT_SOURCE_DATA, this.sourceBackup),
+    );
+    this.listener.fire(
+      'end',
+      pick(DEFAULT_CROPPED_DATA, this.croppedBackup),
+      pick(DEFAULT_SOURCE_DATA, this.sourceBackup),
+    );
 
     this.setCropperVisibility(false);
     this.cropping = false;
