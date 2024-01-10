@@ -1,6 +1,5 @@
 import { fabric } from 'fabric';
-import { ImageCropper } from '../src';
-import { FabricCropListener } from '../src/fabric/fabricCropListener.class';
+import { ImageCropper, FabricCropListener } from '../src';
 
 const cropButton = document.querySelector('#crop-btn') as HTMLButtonElement;
 const confirmButton = document.querySelector('#confirm-btn') as HTMLButtonElement;
@@ -26,24 +25,25 @@ function fabricImageFromURL(url: string, imgOptions?: fabric.IImageOptions) {
 
 (async () => {
   const image = (await fabricImageFromURL('/gallery/pic.png', {
-    left: 100,
-    top: 100,
-    scaleX: -0.6,
+    left: 300,
+    top: 50,
+    scaleX: -0.5,
     scaleY: -0.5,
-    angle: 0,
+    angle: 45,
     flipX: true,
     flipY: true,
   })) as Required<fabric.Image>;
 
   const image2 = (await fabricImageFromURL('/gallery/pic.png', {
-    left: 100,
-    top: 100,
-    scaleX: -0.6,
+    left: 300,
+    top: 50,
+    scaleX: -0.5,
     scaleY: -0.5,
-    angle: 0,
+    angle: 45,
     flipX: true,
     flipY: true,
-    opacity: 0.5,
+    opacity: 0,
+    hasControls: false,
   })) as Required<fabric.Image>;
 
   fabricCanvas.add(image2, image).renderAll();
@@ -55,8 +55,22 @@ function fabricImageFromURL(url: string, imgOptions?: fabric.IImageOptions) {
     fabricCanvas.renderAll();
   });
 
+  listener.on('cancel', (crop, source) => {});
+  listener.on('confirm', (crop, source) => {});
+
   listener.on('start', () => {
-    image2.set(ImageCropper.getSource(image, image._cropSource || image));
+    image2.set({
+      ...ImageCropper.getSource(image, image._cropSource || image),
+      opacity: 0.5,
+    });
+    fabricCanvas.renderAll();
+  });
+
+  listener.on('end', (crop, source) => {
+    image2.set({
+      ...ImageCropper.getSource(image, image._cropSource || image),
+      opacity: 0,
+    });
     fabricCanvas.renderAll();
   });
 
