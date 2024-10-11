@@ -14,9 +14,13 @@ export class FabricCropListener {
   private cropper!: ImageCropper;
   private cropTarget?: fabric.Image;
 
-  public readonly on = this.cropper.on.bind(this.cropper);
+  public get on() {
+    return this.cropper.on;
+  }
 
-  public readonly off = this.cropper.off.bind(this.cropper);
+  public get off() {
+    return this.cropper.off;
+  }
 
   constructor(canvas: fabric.Canvas, options?: ImageCropperOptions) {
     this.canvas = canvas;

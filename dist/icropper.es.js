@@ -269,22 +269,42 @@ class ee {
     this.borderWidth = T, this.borderColor = _, this.scale = 1, this.domScaleX = 1, this.domScaleY = 1, this.imageLoader = new he(), this.controls = {}, this.borders = {
       mt: new R({
         y: -1,
-        actionHandler: () => ({ scaleY: this.domScaleY, width: "100%", height: `${this.borderWidth}px`, color: this.borderColor }),
+        actionHandler: () => ({
+          scaleY: this.domScaleY,
+          width: "100%",
+          height: `${this.borderWidth}px`,
+          color: this.borderColor
+        }),
         borderName: "top"
       }),
       mr: new R({
         x: 1,
-        actionHandler: () => ({ scaleX: this.domScaleX, width: `${this.borderWidth}px`, height: "100%", color: this.borderColor }),
+        actionHandler: () => ({
+          scaleX: this.domScaleX,
+          width: `${this.borderWidth}px`,
+          height: "100%",
+          color: this.borderColor
+        }),
         borderName: "right"
       }),
       mb: new R({
         y: 1,
-        actionHandler: () => ({ scaleY: this.domScaleY, width: "100%", height: `${this.borderWidth}px`, color: this.borderColor }),
+        actionHandler: () => ({
+          scaleY: this.domScaleY,
+          width: "100%",
+          height: `${this.borderWidth}px`,
+          color: this.borderColor
+        }),
         borderName: "bottom"
       }),
       ml: new R({
         x: -1,
-        actionHandler: () => ({ scaleX: this.domScaleX, width: `${this.borderWidth}px`, height: "100%", color: this.borderColor }),
+        actionHandler: () => ({
+          scaleX: this.domScaleX,
+          width: `${this.borderWidth}px`,
+          height: "100%",
+          color: this.borderColor
+        }),
         borderName: "left"
       })
     }, this.render = async (t) => {
@@ -404,10 +424,38 @@ class de extends ee {
       tr: new y({ x: 1, y: -1, angle: 90, createElement: Y("tr"), actionName: "scale" }),
       br: new y({ x: 1, y: 1, angle: 180, createElement: Y("br"), actionName: "scale" }),
       bl: new y({ x: -1, y: 1, angle: 270, createElement: Y("bl"), actionName: "scale" }),
-      ml: new y({ visible: !1, x: -1, y: 0, angle: 90, createElement: E("ml"), actionName: "scale" }),
-      mr: new y({ visible: !1, x: 1, y: 0, angle: 90, createElement: E("mr"), actionName: "scale" }),
-      mt: new y({ visible: !1, x: 0, y: -1, angle: 0, createElement: E("mt"), actionName: "scale" }),
-      mb: new y({ visible: !1, x: 0, y: 1, angle: 0, createElement: E("mb"), actionName: "scale" })
+      ml: new y({
+        visible: !1,
+        x: -1,
+        y: 0,
+        angle: 90,
+        createElement: E("ml"),
+        actionName: "scale"
+      }),
+      mr: new y({
+        visible: !1,
+        x: 1,
+        y: 0,
+        angle: 90,
+        createElement: E("mr"),
+        actionName: "scale"
+      }),
+      mt: new y({
+        visible: !1,
+        x: 0,
+        y: -1,
+        angle: 0,
+        createElement: E("mt"),
+        actionName: "scale"
+      }),
+      mb: new y({
+        visible: !1,
+        x: 0,
+        y: 1,
+        angle: 0,
+        createElement: E("mb"),
+        actionName: "scale"
+      })
     }, this.addBordersAndControls();
   }
   createElement() {
@@ -538,7 +586,9 @@ class se {
       "cropper:mousedown": (s) => {
         var o, n;
         s.stopPropagation(), this.activeCursorStyle.down = ((o = s.target) == null ? void 0 : o.getAttribute(x.ActionCursor)) || "", w(this.container, { cursor: this.activeCursorStyle.down });
-        const r = (n = s.target) == null ? void 0 : n.getAttribute(x.ActionName);
+        const r = (n = s.target) == null ? void 0 : n.getAttribute(
+          x.ActionName
+        );
         r && this.eventCenter[r] ? (this.eventCenter[r](s), this.setCoords()) : this.cancel();
       },
       "cropper:dblclick": (s) => this.confirm(),
@@ -588,9 +638,23 @@ class se {
         ), N = me({ pointer: C, croppedData: n, croppedControlCoords: c, sourceData: h });
         p = N.croppedData, u = N.sourceData;
       } else if (r === L.Cropping && o)
-        p = pe({ pointer: a, croppedData: n, croppedControlCoords: c, sourceData: h, sourceControlCoords: d, corner: o }).croppedData;
+        p = pe({
+          pointer: a,
+          croppedData: n,
+          croppedControlCoords: c,
+          sourceData: h,
+          sourceControlCoords: d,
+          corner: o
+        }).croppedData;
       else if (r === L.Scaling && o) {
-        const C = ue({ pointer: a, croppedData: n, croppedControlCoords: c, sourceData: h, sourceControlCoords: d, corner: o });
+        const C = ue({
+          pointer: a,
+          croppedData: n,
+          croppedControlCoords: c,
+          sourceData: h,
+          sourceControlCoords: d,
+          corner: o
+        });
         p = C.croppedData, u = C.sourceData;
       }
       this.croppedTransform = p, this.sourceTransform = u;
@@ -643,7 +707,9 @@ class se {
     return new l((e.clientX - t.left) * r, (e.clientY - t.top) * o);
   }
   createElement() {
-    const { borderLeftWidth: e, borderTopWidth: t, border: s, width: r, height: o, position: n } = window.getComputedStyle(this.container);
+    const { borderLeftWidth: e, borderTopWidth: t, border: s, width: r, height: o, position: n } = window.getComputedStyle(
+      this.container
+    );
     return f("div", {
       classList: ["ic-container"],
       style: {
@@ -712,7 +778,15 @@ class se {
    * Cancel cropping
    */
   cancel() {
-    this.listener.fire("cancel", D(S, this.croppedBackup), D(k, this.sourceBackup)), this.listener.fire("end", D(S, this.croppedBackup), D(k, this.sourceBackup)), this.setCropperVisibility(!1), this.cropping = !1;
+    this.listener.fire(
+      "cancel",
+      D(S, this.croppedBackup),
+      D(k, this.sourceBackup)
+    ), this.listener.fire(
+      "end",
+      D(S, this.croppedBackup),
+      D(k, this.sourceBackup)
+    ), this.setCropperVisibility(!1), this.cropping = !1;
   }
 }
 function fe(i) {
@@ -731,10 +805,10 @@ class be {
     }, this.canvas = e, this.init(t);
   }
   get on() {
-    return this.cropper.on.bind(this.cropper);
+    return this.cropper.on;
   }
   get off() {
-    return this.cropper.off.bind(this.cropper);
+    return this.cropper.off;
   }
   init(e) {
     var t;
